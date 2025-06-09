@@ -1,43 +1,28 @@
 import tkinter as tk
-from tkinter import messagebox
 from views.main_view import MainView
-
-# Ollama 상태 체크 유틸
-from utils.ollama_manager import (
-    is_ollama_installed,
-    is_ollama_running,
-    start_ollama_model,
-)
+from utils.ollama_manager import is_ollama_running, start_ollama_model_background
+import threading
+from tkinter import messagebox
 
 
-def ensure_ollama_ready():
-    if not is_ollama_installed():
-        messagebox.showwarning(
-            "Ollama 미설치",
-            "🤖 GPT 분석 기능을 사용하려면 Ollama가 필요합니다.\n\n"
-            "1. https://ollama.com/download 에서 Ollama를 설치한 후\n"
-            "2. 앱을 다시 실행해주세요.",
-        )
-        return False
-
+def check_and_prompt_ollama(model="mistral"):
     if not is_ollama_running():
-        started = start_ollama_model("mistral")
-        if started:
-            messagebox.showinfo(
-                "Ollama 실행됨",
-                "Ollama가 자동으로 실행되었습니다.\n잠시 후 GPT 기능이 활성화됩니다.",
+
+        def prompt():
+            answer = messagebox.askyesno(
+                "Ollama 비활성화됨", "Ollama가 꺼져 있습니다. 실행하시겠습니까?"
             )
-        else:
-            messagebox.showwarning(
-                "Ollama 실행 실패",
-                "Ollama를 자동으로 실행할 수 없습니다.\n\n터미널에서 직접 다음을 실행해주세요:\n\n"
-                "    ollama run mistral",
-            )
-    return True
+            if answer:
+                start_ollama_model_background(model)
+
+        # UI가 다 뜬 후 메시지 띄우도록 딜레이
+        app.after(1000, prompt)
 
 
 if __name__ == "__main__":
-    ensure_ollama_ready()
-
     app = MainView()
+
+    # Ollama 비동기 상태 체크 (UI 띄운 후 실행)
+    threading.Thread(target=check_and_prompt_ollama, daemon=True).start()
+
     app.mainloop()

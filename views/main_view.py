@@ -1,10 +1,13 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox, scrolledtext
 import threading
-from ttkbootstrap.toast import ToastNotification
 from ttkbootstrap import Style
-
-
+from utils.ollama_manager import (
+    is_ollama_running,
+    start_ollama_model_background,
+    stop_ollama_process,
+)
+from win10toast_click import ToastNotifier
 from viewmodels.prompt_viewmodel import PromptViewModel
 
 
@@ -21,6 +24,28 @@ class MainView(tk.Tk):
         self.project_loaded = False
 
         self.create_widgets()
+
+        self.update_ollama_status()
+
+    def show_system_toast(self, message: str):
+        try:
+            toaster = ToastNotifier()
+            toaster.show_toast(
+                "GPT Prompt Assistant",
+                "프롬프트 생성이 완료되었습니다.",
+                duration=7,
+                icon_path=None,
+                threaded=False,
+            )
+        except Exception as e:
+            print(f"토스트 알림 실패: {e}")
+
+    def update_ollama_status(self):
+        """Ollama 상태에 따라 요청 버튼 활성화/비활성화"""
+        if is_ollama_running():
+            self.submit_button.config(state="normal")
+        else:
+            self.submit_button.config(state="disabled")
 
     def create_widgets(self):
         # 전체 프레임 (좌우 분할용)
@@ -50,6 +75,13 @@ class MainView(tk.Tk):
         # 상단 프레임
         top_frame = tk.Frame(right_frame)
         top_frame.pack(padx=10, pady=5, fill="x")
+
+        # Ollama 실행 상태 표시 버튼
+        self.ollama_button = tk.Button(
+            top_frame, text="🔄 Ollama 상태 확인 중...", command=self.toggle_ollama
+        )
+        self.ollama_button.pack(side="left", padx=10)
+        self.update_ollama_button()  # 초기 상태 반영
 
         self.select_button = tk.Button(
             top_frame, text="📁 프로젝트 열기", command=self.select_project
@@ -143,6 +175,34 @@ class MainView(tk.Tk):
             self.update_tree_structure()
         messagebox.showinfo("새로고침 완료", "프로젝트 캐시를 새로 생성했습니다.")
 
+    def update_ollama_button(self):
+        def check_and_update():
+            running = is_ollama_running()
+            label = "🟢 Ollama 실행 중" if running else "🔴 Ollama 꺼짐"
+            self.ollama_button.config(text=label)
+
+        threading.Thread(target=check_and_update, daemon=True).start()
+
+    def toggle_ollama(self):
+        if is_ollama_running():
+            confirm = messagebox.askyesno("Ollama 종료", "Ollama를 종료하시겠습니까?")
+            if confirm:
+                success = stop_ollama_process()
+                if success:
+                    messagebox.showinfo("종료 완료", "Ollama가 종료되었습니다.")
+                else:
+                    messagebox.showwarning("종료 실패", "Ollama를 종료할 수 없습니다.")
+        else:
+            confirm = messagebox.askyesno("Ollama 실행", "Ollama를 실행하시겠습니까?")
+            if confirm:
+                start_ollama_model_background()
+                messagebox.showinfo(
+                    "Ollama 실행됨", "새 CMD 창에서 Ollama가 실행되었습니다."
+                )
+
+        self.update_ollama_status()
+        self.update_ollama_button()
+
     def update_tree_structure(self):
         self.tree_box.config(state="normal")
         self.tree_box.delete("1.0", tk.END)
@@ -175,13 +235,4 @@ class MainView(tk.Tk):
         self.output_box.insert(tk.END, result)
         self.status_label.config(text="✅ 완료")
         self.submit_button.config(state="normal")
-
-        # ✅ 토스트 메시지 띄우기
-        toast = ToastNotification(
-            title="프롬프트 생성 완료",
-            message="GPT 응답이 완료되었습니다.",
-            duration=7000,  # 3초 후 자동 종료
-            alert=True,
-            position=(self.winfo_x() + 100, self.winfo_y() + 100),
-        )
-        toast.show_toast()
+        self.show_system_toast("프롬프트 생성이 완료되었습니다.")
