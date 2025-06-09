@@ -1,26 +1,78 @@
 import os
+import re
 
-def find_related_files(root_path: str, keywords: list[str]) -> list[str]:
-    """
-    키워드와 관련된 파일들을 src 하위에서 탐색하여 중요도 순으로 정렬해 반환.
-    파일 경로가 키워드를 얼마나 많이 포함하는지를 기준으로 가중치를 계산.
-    """
-    matched_files = []
+# 📌 Python 함수 파싱용
+import ast
 
-    for dirpath, _, filenames in os.walk(root_path):
-        for fname in filenames:
-            if not fname.endswith(".py"):
+# ✅ 키워드 유사어 매핑
+KEYWORD_VARIANTS = {
+    "복사": ["copy", "duplicate", "clone", "복사"],
+    "팝업": ["popup", "modal", "dialog", "alert", "팝업"],
+    "트리": ["tree", "node", "branch", "leaf", "트리"],
+    "버튼": ["button", "click", "press", "btn", "버튼"],
+    "우측": ["right", "context", "우클릭", "rightclick", "우측"],
+}
+
+
+def expand_keywords(keywords):
+    expanded = []
+    for word in keywords:
+        expanded.extend(KEYWORD_VARIANTS.get(word, [word]))
+    return list(set(expanded))
+
+
+def extract_function_bodies_from_python(filepath):
+    try:
+        with open(filepath, "r", encoding="utf-8") as f:
+            source = f.read()
+        tree = ast.parse(source)
+        return [
+            (node.name, ast.get_source_segment(source, node))
+            for node in ast.walk(tree)
+            if isinstance(node, ast.FunctionDef)
+        ]
+    except Exception:
+        return []
+
+
+def extract_function_bodies_from_js(filepath):
+    try:
+        with open(filepath, "r", encoding="utf-8") as f:
+            source = f.read()
+        pattern = re.compile(
+            r"(?:function\s+|const\s+)(\w+)\s*=\s*\(.*?\)\s*=>\s*{.*?}", re.DOTALL
+        )
+        matches = pattern.findall(source)
+        return [(name, source) for name in matches]
+    except Exception:
+        return []
+
+
+def find_related_files(folder_path, keywords):
+    related = []
+    keywords = expand_keywords(keywords)
+
+    for root, _, files in os.walk(folder_path):
+        for file in files:
+            if not file.endswith((".py", ".js", ".jsx")):
                 continue
-            full_path = os.path.join(dirpath, fname)
-            rel_path = os.path.relpath(full_path, root_path)
-            rel_path_lower = rel_path.lower()
 
-            # 키워드 포함 개수로 점수 계산
-            score = sum(1 for kw in keywords if kw in rel_path_lower)
+            full_path = os.path.join(root, file)
+            try:
+                content = ""
+                if file.endswith(".py"):
+                    functions = extract_function_bodies_from_python(full_path)
+                else:
+                    functions = extract_function_bodies_from_js(full_path)
 
-            if score > 0:
-                matched_files.append((score, rel_path))
+                content += "\n".join([body for _, body in functions])
+                with open(full_path, "r", encoding="utf-8") as f:
+                    content += f.read()
 
-    # 점수 높은 순으로 정렬
-    matched_files.sort(reverse=True)
-    return [path for score, path in matched_files]
+                if any(kw.lower() in content.lower() for kw in keywords):
+                    related.append(os.path.relpath(full_path, folder_path))
+
+            except Exception:
+                continue
+
+    return related

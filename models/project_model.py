@@ -4,6 +4,7 @@ class ProjectContext:
         self.tree_structure = ""
         self.function_summary = ""
         self.config_summary = ""
+        self.project_context = ""
 
     def is_loaded(self):
         return self.project_path != ""
