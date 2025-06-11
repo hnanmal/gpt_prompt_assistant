@@ -1,37 +1,80 @@
 import os, ast, json
 
-def get_project_tree(root_dir, indent=""):
-    result = ""
-    for entry in sorted(os.listdir(root_dir)):
-        full_path = os.path.join(root_dir, entry)
-        if os.path.isdir(full_path):
-            result += f"{indent}📁 {entry}/\n"
-            result += get_project_tree(full_path, indent + "  ")
-        elif os.path.isfile(full_path):
-            result += f"{indent}📄 {entry}\n"
-    return result
+
+def summarize_functions(file_path):
+    with open(file_path, "r", encoding="utf-8") as f:
+        source = f.read()
+
+    tree = ast.parse(source)
+    lines = []
+
+    for node in ast.walk(tree):
+        if isinstance(node, ast.FunctionDef):
+            name = node.name
+            args = ", ".join(arg.arg for arg in node.args.args)
+            doc = ast.get_docstring(node) or "(설명 없음)"
+            lines.append(f"🔹 {name}({args})\n    {doc.strip()}\n")
+
+    return "\n".join(lines) or "요약할 함수가 없습니다."
+
+
+def get_project_tree(base_path):
+    """
+    현재 폴더 기준으로 전체 구조를 탐색합니다.
+    - __pycache__, .venv, .git, .idea, .gptcache 제외
+    - .pyc 파일 제외
+    """
+    tree_lines = []
+
+    for root, dirs, files in os.walk(base_path):
+        # 📌 디렉토리 필터링
+        dirs[:] = [
+            d
+            for d in dirs
+            if d not in {"__pycache__", ".venv", "venv", ".git", ".idea", ".gptcache"}
+        ]
+
+        indent = "    " * (root[len(base_path) :].count(os.sep))
+        tree_lines.append(f"{indent}📁 {os.path.basename(root)}/")
+
+        for file in files:
+            # 📌 파일 필터링: .py 파일만 허용 (.pyc, 기타 확장자 제외)
+            if file.endswith(".py"):
+                tree_lines.append(f"{indent}    📄 {file}")
+
+    return "\n".join(tree_lines)
 
 
 def extract_functions(root_dir):
     result = ""
-    for dirpath, _, filenames in os.walk(root_dir):
+    for dirpath, dirnames, filenames in os.walk(root_dir):
+        # ✅ 무시할 디렉토리 추가
+        dirnames[:] = [
+            d
+            for d in dirnames
+            if d not in {"__pycache__", ".venv", "venv", ".git", ".idea", ".gptcache"}
+        ]
+
         for fname in filenames:
             if fname.endswith(".py"):
                 path = os.path.join(dirpath, fname)
                 try:
                     with open(path, "r", encoding="utf-8") as f:
                         tree = ast.parse(f.read())
-                    funcs = [n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef)]
+                    funcs = [
+                        n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef)
+                    ]
                     if funcs:
                         rel_path = os.path.relpath(path, root_dir)
                         result += f"📄 {rel_path}\n"
                         for func in funcs:
                             doc = ast.get_docstring(func)
-                            summary = doc.split('\n')[0] if doc else ""
+                            summary = doc.split("\n")[0] if doc else ""
                             result += f"  - def {func.name}() → {summary}\n"
                 except:
                     pass
     return result
+
 
 def load_config(project_root):
     config_path = os.path.join(project_root, "project.gptconfig.json")

@@ -1,0 +1,59 @@
+📄 main.py
+  - def check_and_prompt_ollama() → 
+  - def prompt() → 
+📄 models\project_model.py
+  - def __init__() → 
+  - def is_loaded() → 
+📄 utils\context_builder.py
+  - def extract_functions_from_file() → .py 파일에서 함수 정의 이름들을 추출합니다.
+  - def extract_functions_from_js_file() → .js 또는 .jsx 파일에서 함수 이름 추출 (function, arrow function, export default 등)
+  - def generate_structure_summary() → 주어진 루트 경로로부터 폴더 및 파일 구조를 문자열로 요약합니다.
+  - def combine_context() → 프로젝트 설명 + 구조 요약 + 함수 요약을 하나의 프롬프트 컨텍스트로 병합합니다.
+  - def walk() → 
+📄 utils\file_matcher.py
+  - def expand_keywords() → 
+  - def extract_function_bodies_from_python() → 
+  - def extract_function_bodies_from_js() → 
+  - def find_related_files() → 
+📄 utils\keyword_utils.py
+  - def extract_keywords() → 사용자의 요청 문장에서 의미 있는 키워드만 추출한다.
+📄 utils\ollama_client.py
+  - def ask_ollama() → Ollama 모델에게 프롬프트를 보내고 응답을 받아 반환
+📄 utils\ollama_manager.py
+  - def is_ollama_installed() → 
+  - def is_ollama_running() → 
+  - def is_model_ready() → 
+  - def pull_model_if_needed() → 
+  - def start_ollama_model_background() → 
+  - def stop_ollama_process() → 
+📄 utils\parser_utils.py
+  - def summarize_functions() → 
+  - def get_project_tree() → 현재 폴더 기준으로 전체 구조를 탐색합니다.
+  - def extract_functions() → 
+  - def load_config() → 
+📄 viewmodels\prompt_viewmodel.py
+  - def __init__() → 
+  - def _ensure_cache_dir() → 
+  - def _detect_code_root() → 
+  - def load_project() → 
+  - def generate_prompt() → 
+  - def is_cache_used() → 
+📄 views\main_view.py
+  - def __init__() → 
+  - def show_system_toast() → 
+  - def show_custom_toast() → 
+  - def update_ollama_status() → Ollama 상태에 따라 요청 버튼 활성화/비활성화
+  - def create_widgets() → 
+  - def copy_output() → 
+  - def save_output() → 
+  - def select_project() → 
+  - def reload_project() → 
+  - def update_ollama_button() → 
+  - def toggle_ollama() → 
+  - def update_tree_structure() → 
+  - def on_user_submit() → 
+  - def run_gpt_prompt_thread() → 
+  - def update_output() → 
+  - def show_function_summary_popup() → 
+  - def _show() → 
+  - def check_and_update() → 

@@ -1,0 +1,15 @@
+📁 gpt_prompt_assistant/
+    📄 main.py
+    📁 models/
+        📄 project_model.py
+    📁 utils/
+        📄 context_builder.py
+        📄 file_matcher.py
+        📄 keyword_utils.py
+        📄 ollama_client.py
+        📄 ollama_manager.py
+        📄 parser_utils.py
+    📁 viewmodels/
+        📄 prompt_viewmodel.py
+    📁 views/
+        📄 main_view.py

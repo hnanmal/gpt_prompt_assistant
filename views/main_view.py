@@ -9,6 +9,7 @@ from utils.ollama_manager import (
 )
 from win10toast_click import ToastNotifier
 from viewmodels.prompt_viewmodel import PromptViewModel
+from utils.parser_utils import summarize_functions
 
 
 class MainView(tk.Tk):
@@ -39,6 +40,26 @@ class MainView(tk.Tk):
             )
         except Exception as e:
             print(f"토스트 알림 실패: {e}")
+
+    def show_custom_toast(self, message: str):
+        def _show():
+            toast = tk.Toplevel(self)
+            toast.title("📢 알림")
+            toast.geometry("300x100+100+100")
+            toast.attributes("-topmost", True)
+            toast.resizable(False, False)
+            toast.configure(bg="white")
+
+            label = tk.Label(toast, text=message, bg="white", font=("맑은 고딕", 10))
+            label.pack(pady=10, padx=10)
+
+            close_button = tk.Button(toast, text="닫기", command=toast.destroy)
+            close_button.pack(pady=5)
+
+            toast.mainloop()
+
+        # 별도 쓰레드로 실행
+        threading.Thread(target=_show, daemon=True).start()
 
     def update_ollama_status(self):
         """Ollama 상태에 따라 요청 버튼 활성화/비활성화"""
@@ -126,6 +147,13 @@ class MainView(tk.Tk):
         )
         self.save_button.pack(side="left", padx=5)
 
+        self.func_summary_button = tk.Button(
+            button_frame,
+            text="🧠 함수 요약 보기",
+            command=self.show_function_summary_popup,
+        )
+        self.func_summary_button.pack(side="left", padx=5)
+
     def copy_output(self):
         text = self.output_box.get("1.0", tk.END).strip()
         if text:
@@ -165,15 +193,24 @@ class MainView(tk.Tk):
         if not self.project_loaded:
             messagebox.showwarning("경고", "먼저 프로젝트를 열어주세요.")
             return
+
+        # 🔄 캐시 무시하고 강제 로드
         success, msg, used_cache = self.viewmodel.load_project(
             self.viewmodel.context.project_path, force_reload=True
         )
+
+        # ✅ 캐시 상태 업데이트
         self.cache_label.config(
             text=f"{'✅ 캐시 사용됨' if used_cache else '❌ 캐시 미사용'}"
         )
+
         if success:
             self.update_tree_structure()
-        messagebox.showinfo("새로고침 완료", "프로젝트 캐시를 새로 생성했습니다.")
+            messagebox.showinfo(
+                "✅ 새로고침 완료", "프로젝트 정보를 새로 분석하고 캐시를 갱신했습니다."
+            )
+        else:
+            messagebox.showerror("❌ 새로고침 실패", msg)
 
     def update_ollama_button(self):
         def check_and_update():
@@ -235,4 +272,24 @@ class MainView(tk.Tk):
         self.output_box.insert(tk.END, result)
         self.status_label.config(text="✅ 완료")
         self.submit_button.config(state="normal")
-        self.show_system_toast("프롬프트 생성이 완료되었습니다.")
+        self.show_custom_toast("프롬프트 생성이 완료되었습니다.")
+
+    def show_function_summary_popup(self):
+        summary = self.viewmodel.context.function_summary.strip()
+        if not summary:
+            messagebox.showinfo("알림", "함수 요약 정보가 없습니다.")
+            return
+
+        popup = tk.Toplevel(self)
+        popup.title("🧠 함수 요약 보기")
+        popup.geometry("800x600")
+        popup.transient(self)  # 부모 위에 떠 있게
+
+        text = tk.Text(popup, wrap="word", font=("Consolas", 10))
+        text.insert("1.0", summary)
+        text.config(state="disabled")
+
+        scrollbar = tk.Scrollbar(popup, command=text.yview)
+        text.configure(yscrollcommand=scrollbar.set)
+        scrollbar.pack(side="right", fill="y")
+        text.pack(fill="both", expand=True)

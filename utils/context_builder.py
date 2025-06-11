@@ -3,30 +3,30 @@ import ast
 import re
 
 
-def generate_structure_summary(root_path: str, max_depth: int = 3) -> str:
-    """
-    주어진 루트 경로로부터 폴더 및 파일 구조를 문자열로 요약합니다.
-    """
-    summary_lines = []
+# def generate_structure_summary(root_path: str, max_depth: int = 3) -> str:
+#     """
+#     주어진 루트 경로로부터 폴더 및 파일 구조를 문자열로 요약합니다.
+#     """
+#     summary_lines = []
 
-    def walk(path, depth):
-        if depth > max_depth:
-            return
-        try:
-            entries = sorted(os.listdir(path))
-        except Exception:
-            return
-        for entry in entries:
-            full_path = os.path.join(path, entry)
-            prefix = "  " * depth
-            if os.path.isdir(full_path):
-                summary_lines.append(f"{prefix}📁 {entry}/")
-                walk(full_path, depth + 1)
-            elif os.path.isfile(full_path):
-                summary_lines.append(f"{prefix}📄 {entry}")
+#     def walk(path, depth):
+#         if depth > max_depth:
+#             return
+#         try:
+#             entries = sorted(os.listdir(path))
+#         except Exception:
+#             return
+#         for entry in entries:
+#             full_path = os.path.join(path, entry)
+#             prefix = "  " * depth
+#             if os.path.isdir(full_path):
+#                 summary_lines.append(f"{prefix}📁 {entry}/")
+#                 walk(full_path, depth + 1)
+#             elif os.path.isfile(full_path):
+#                 summary_lines.append(f"{prefix}📄 {entry}")
 
-    walk(root_path, 0)
-    return "\n".join(summary_lines)
+#     walk(root_path, 0)
+#     return "\n".join(summary_lines)
 
 
 def extract_functions_from_file(filepath: str) -> list[str]:
@@ -69,28 +69,47 @@ def extract_functions_from_js_file(filepath: str) -> list[str]:
         return []
 
 
-def generate_function_summary(
-    root_path: str, include_exts: list[str] = [".py", ".js", ".jsx"]
-) -> str:
+def generate_structure_summary(root_path: str, max_depth: int = 3) -> str:
     """
-    주어진 루트 경로 내의 파일들에서 함수 정의를 찾아 요약합니다.
+    주어진 루트 경로로부터 폴더 및 파일 구조를 문자열로 요약합니다.
+    __pycache__, .pyc, .venv, .git 등은 제외합니다.
     """
-    summary = []
-    for dirpath, _, filenames in os.walk(root_path):
-        for filename in filenames:
-            if any(filename.endswith(ext) for ext in include_exts):
-                full_path = os.path.join(dirpath, filename)
-                if filename.endswith(".py"):
-                    functions = extract_functions_from_file(full_path)
-                else:
-                    functions = extract_functions_from_js_file(full_path)
+    summary_lines = []
 
-                if functions:
-                    rel_path = os.path.relpath(full_path, root_path)
-                    summary.append(f"- {rel_path} :")
-                    for fn in functions:
-                        summary.append(f"  - {fn}()")
-    return "\n".join(summary)
+    def walk(path, depth):
+        if depth > max_depth:
+            return
+        try:
+            entries = sorted(os.listdir(path))
+        except Exception:
+            return
+
+        for entry in entries:
+            full_path = os.path.join(path, entry)
+
+            # ⛔ 무시할 디렉토리
+            if os.path.isdir(full_path) and entry in {
+                "__pycache__",
+                ".git",
+                ".venv",
+                ".idea",
+                ".gptcache",
+            }:
+                continue
+
+            # ✅ 디렉토리 처리
+            if os.path.isdir(full_path):
+                prefix = "  " * depth
+                summary_lines.append(f"{prefix}📁 {entry}/")
+                walk(full_path, depth + 1)
+
+            # ✅ 파일 처리 (.pyc 같은 건 무시)
+            elif os.path.isfile(full_path) and not entry.endswith(".pyc"):
+                prefix = "  " * depth
+                summary_lines.append(f"{prefix}📄 {entry}")
+
+    walk(root_path, 0)
+    return "\n".join(summary_lines)
 
 
 def combine_context(project_context: str, structure: str, functions: str) -> str:
