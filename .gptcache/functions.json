@@ -1,6 +1,11 @@
 📄 main.py
   - def check_and_prompt_ollama() → 
   - def prompt() → 
+📄 controllers\project_controller.py
+  - def __init__() → 
+  - def select_project() → 
+  - def reload_project() → 
+  - def _update_cache_label() → 
 📄 models\project_model.py
   - def __init__() → 
   - def is_loaded() → 
@@ -40,14 +45,14 @@
   - def is_cache_used() → 
 📄 views\main_view.py
   - def __init__() → 
+  - def select_project() → 
+  - def reload_project() → 
   - def show_system_toast() → 
   - def show_custom_toast() → 
   - def update_ollama_status() → Ollama 상태에 따라 요청 버튼 활성화/비활성화
   - def create_widgets() → 
   - def copy_output() → 
   - def save_output() → 
-  - def select_project() → 
-  - def reload_project() → 
   - def update_ollama_button() → 
   - def toggle_ollama() → 
   - def update_tree_structure() → 

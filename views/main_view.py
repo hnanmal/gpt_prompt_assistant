@@ -10,6 +10,7 @@ from utils.ollama_manager import (
 from win10toast_click import ToastNotifier
 from viewmodels.prompt_viewmodel import PromptViewModel
 from utils.parser_utils import summarize_functions
+from controllers.project_controller import ProjectController
 
 
 class MainView(tk.Tk):
@@ -22,11 +23,18 @@ class MainView(tk.Tk):
         self.geometry("900x700")
 
         self.viewmodel = PromptViewModel()
+        self.project_controller = ProjectController(self, self.viewmodel)
         self.project_loaded = False
 
         self.create_widgets()
 
         self.update_ollama_status()
+
+    def select_project(self):
+        self.project_controller.select_project()
+
+    def reload_project(self):
+        self.project_controller.reload_project()
 
     def show_system_toast(self, message: str):
         try:
@@ -177,40 +185,40 @@ class MainView(tk.Tk):
                 f.write(text)
             messagebox.showinfo("저장 완료", f"결과가 저장되었습니다:\n{file_path}")
 
-    def select_project(self):
-        folder = filedialog.askdirectory(title="프로젝트 폴더 선택")
-        if folder:
-            success, msg, used_cache = self.viewmodel.load_project(folder)
-            self.cache_label.config(
-                text=f"{'✅ 캐시 사용됨' if used_cache else '❌ 캐시 미사용'}"
-            )
-            self.project_loaded = success
-            if success:
-                self.update_tree_structure()
-            messagebox.showinfo("로드 결과", msg)
+    # def select_project(self):
+    #     folder = filedialog.askdirectory(title="프로젝트 폴더 선택")
+    #     if folder:
+    #         success, msg, used_cache = self.viewmodel.load_project(folder)
+    #         self.cache_label.config(
+    #             text=f"{'✅ 캐시 사용됨' if used_cache else '❌ 캐시 미사용'}"
+    #         )
+    #         self.project_loaded = success
+    #         if success:
+    #             self.update_tree_structure()
+    #         messagebox.showinfo("로드 결과", msg)
 
-    def reload_project(self):
-        if not self.project_loaded:
-            messagebox.showwarning("경고", "먼저 프로젝트를 열어주세요.")
-            return
+    # def reload_project(self):
+    #     if not self.project_loaded:
+    #         messagebox.showwarning("경고", "먼저 프로젝트를 열어주세요.")
+    #         return
 
-        # 🔄 캐시 무시하고 강제 로드
-        success, msg, used_cache = self.viewmodel.load_project(
-            self.viewmodel.context.project_path, force_reload=True
-        )
+    #     # 🔄 캐시 무시하고 강제 로드
+    #     success, msg, used_cache = self.viewmodel.load_project(
+    #         self.viewmodel.context.project_path, force_reload=True
+    #     )
 
-        # ✅ 캐시 상태 업데이트
-        self.cache_label.config(
-            text=f"{'✅ 캐시 사용됨' if used_cache else '❌ 캐시 미사용'}"
-        )
+    #     # ✅ 캐시 상태 업데이트
+    #     self.cache_label.config(
+    #         text=f"{'✅ 캐시 사용됨' if used_cache else '❌ 캐시 미사용'}"
+    #     )
 
-        if success:
-            self.update_tree_structure()
-            messagebox.showinfo(
-                "✅ 새로고침 완료", "프로젝트 정보를 새로 분석하고 캐시를 갱신했습니다."
-            )
-        else:
-            messagebox.showerror("❌ 새로고침 실패", msg)
+    #     if success:
+    #         self.update_tree_structure()
+    #         messagebox.showinfo(
+    #             "✅ 새로고침 완료", "프로젝트 정보를 새로 분석하고 캐시를 갱신했습니다."
+    #         )
+    #     else:
+    #         messagebox.showerror("❌ 새로고침 실패", msg)
 
     def update_ollama_button(self):
         def check_and_update():
