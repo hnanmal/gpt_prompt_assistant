@@ -4,6 +4,25 @@ import psutil
 import requests
 
 
+def list_ollama_models(base_url="http://localhost:11434"):
+    """
+    현재 Ollama 서버에서 사용 가능한 모델 목록을 반환합니다.
+
+    Returns:
+        list[str]: 설치된 모델 이름 리스트
+    """
+    try:
+        response = requests.get(f"{base_url}/api/tags")
+        response.raise_for_status()
+        data = response.json()
+
+        # 모델 이름만 추출
+        return [model["name"] for model in data.get("models", [])]
+    except Exception as e:
+        print(f"[Ollama 오류] 모델 목록 가져오기 실패: {e}")
+        return []
+
+
 def is_ollama_installed():
     return shutil.which("ollama") is not None
 
@@ -34,27 +53,58 @@ def pull_model_if_needed(model="mistral"):
         return False
 
 
-def start_ollama_model_background(model="mistral"):
+# def start_ollama_model_background(model="mistral"):
+#     try:
+#         subprocess.Popen(["start", "cmd", "/k", f"ollama run {model}"], shell=True)
+#         return True
+#     except Exception as e:
+#         print(f"[Ollama] 모델 실행 실패: {e}")
+#         return False
+
+
+# 현재 실행 중인 ollama 프로세스 종료
+def stop_ollama_process():
+    for proc in psutil.process_iter(attrs=["pid", "name", "cmdline"]):
+        try:
+            if "ollama" in proc.info["name"].lower() or any(
+                "ollama" in arg for arg in proc.info["cmdline"]
+            ):
+                print(f"[Ollama 종료] PID {proc.info['pid']}")
+                proc.terminate()  # 또는 proc.kill()
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            continue
+
+
+# 새로운 모델을 백그라운드로 실행
+def start_ollama_model_background(model_name: str):
     try:
-        subprocess.Popen(["start", "cmd", "/k", f"ollama run {model}"], shell=True)
+        print(f"[모델 실행] ollama run {model_name}")
+        subprocess.Popen(
+            ["ollama", "run", model_name],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+    except Exception as e:
+        print(f"[실행 실패] {e}")
+        raise e
+
+
+def apply_ollama_model(model_name: str, base_url="http://localhost:11434") -> bool:
+    """
+    주어진 모델을 Ollama 서버에서 적용(로드)합니다.
+
+    Returns:
+        bool: 성공 여부
+    """
+
+    try:
+        response = requests.post(
+            f"{base_url}/api/generate",
+            json={"model": model_name, "prompt": "Hello", "stream": False},
+            timeout=5,
+        )
+        response.raise_for_status()
         return True
     except Exception as e:
-        print(f"[Ollama] 모델 실행 실패: {e}")
+        print(f"[Ollama 오류] 모델 적용 실패: {e}")
         return False
-
-
-def stop_ollama_process():
-    for proc in psutil.process_iter(["pid", "name", "cmdline"]):
-        try:
-            name = proc.info.get("name") or ""
-            cmdline = proc.info.get("cmdline") or []
-
-            if "ollama" in name.lower() or any(
-                "ollama" in str(arg).lower() for arg in cmdline
-            ):
-                proc.terminate()
-                proc.wait(timeout=5)
-                return True
-        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-            continue
-    return False

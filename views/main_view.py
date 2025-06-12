@@ -1,7 +1,10 @@
+import subprocess
 import tkinter as tk
 from tkinter import filedialog, messagebox, scrolledtext
 import threading
+from ttkbootstrap import ttk
 from ttkbootstrap import Style
+from controllers.model_controller import ModelController
 from utils.ollama_manager import (
     is_ollama_running,
     start_ollama_model_background,
@@ -71,10 +74,17 @@ class MainView(tk.Tk):
 
     def update_ollama_status(self):
         """Ollama 상태에 따라 요청 버튼 활성화/비활성화"""
-        if is_ollama_running():
-            self.submit_button.config(state="normal")
-        else:
-            self.submit_button.config(state="disabled")
+
+        def check_status():
+            running = is_ollama_running()
+            self.after(
+                0,
+                lambda: self.submit_button.config(
+                    state="normal" if running else "disabled"
+                ),
+            )
+
+        threading.Thread(target=check_status, daemon=True).start()
 
     def create_widgets(self):
         # 전체 프레임 (좌우 분할용)
@@ -162,6 +172,69 @@ class MainView(tk.Tk):
         )
         self.func_summary_button.pack(side="left", padx=5)
 
+        # 모델 선택 드롭다운
+        self.model_var = tk.StringVar()
+        self.model_dropdown = ttk.Combobox(
+            self, textvariable=self.model_var, state="readonly"
+        )
+        self.model_dropdown.pack(pady=5)
+
+        # 적용 버튼
+        self.apply_model_btn = ttk.Button(
+            self, text="모델 적용", command=self.on_apply_model
+        )
+        self.apply_model_btn.pack(pady=5)
+
+        # 모델 목록 불러오기 및 UI에 바인딩
+        self.model_controller = ModelController()
+        models = self.model_controller.load_models()
+        self.model_dropdown["values"] = [m.name for m in models]
+
+        # 빠른 모델 자동 선택
+        fastest = self.model_controller.select_fastest_model()
+        if fastest:
+            self.model_var.set(fastest.name)
+
+        # 모델 설치 버튼
+        self.install_model_button = ttk.Button(
+            self, text="모델 설치", command=self.install_model_popup
+        )
+        self.install_model_button.pack(pady=5)
+
+    def install_model_popup(self):
+        popup = tk.Toplevel(self)
+        popup.title("모델 설치")
+        popup.geometry("300x150")
+        popup.transient(self)
+
+        label = tk.Label(
+            popup,
+            text="설치할 모델 이름을 입력하세요 (예: llama2)",
+            font=("맑은 고딕", 10),
+        )
+        label.pack(pady=10)
+
+        model_entry = tk.Entry(popup)
+        model_entry.pack(pady=5)
+
+        def install_and_close():
+            model_name = model_entry.get().strip()
+            if model_name:
+                self.run_model_install_cmd(model_name)
+            popup.destroy()
+
+        install_btn = ttk.Button(popup, text="설치", command=install_and_close)
+        install_btn.pack(pady=5)
+
+    def run_model_install_cmd(self, model_name: str):
+        try:
+            subprocess.Popen(
+                ["cmd.exe", "/k", f"ollama pull {model_name}"],
+                creationflags=subprocess.CREATE_NEW_CONSOLE,
+            )
+        except Exception as e:
+            messagebox.showerror("오류", f"모델 설치 실패: {e}")
+
     def copy_output(self):
         text = self.output_box.get("1.0", tk.END).strip()
         if text:
@@ -185,46 +258,12 @@ class MainView(tk.Tk):
                 f.write(text)
             messagebox.showinfo("저장 완료", f"결과가 저장되었습니다:\n{file_path}")
 
-    # def select_project(self):
-    #     folder = filedialog.askdirectory(title="프로젝트 폴더 선택")
-    #     if folder:
-    #         success, msg, used_cache = self.viewmodel.load_project(folder)
-    #         self.cache_label.config(
-    #             text=f"{'✅ 캐시 사용됨' if used_cache else '❌ 캐시 미사용'}"
-    #         )
-    #         self.project_loaded = success
-    #         if success:
-    #             self.update_tree_structure()
-    #         messagebox.showinfo("로드 결과", msg)
-
-    # def reload_project(self):
-    #     if not self.project_loaded:
-    #         messagebox.showwarning("경고", "먼저 프로젝트를 열어주세요.")
-    #         return
-
-    #     # 🔄 캐시 무시하고 강제 로드
-    #     success, msg, used_cache = self.viewmodel.load_project(
-    #         self.viewmodel.context.project_path, force_reload=True
-    #     )
-
-    #     # ✅ 캐시 상태 업데이트
-    #     self.cache_label.config(
-    #         text=f"{'✅ 캐시 사용됨' if used_cache else '❌ 캐시 미사용'}"
-    #     )
-
-    #     if success:
-    #         self.update_tree_structure()
-    #         messagebox.showinfo(
-    #             "✅ 새로고침 완료", "프로젝트 정보를 새로 분석하고 캐시를 갱신했습니다."
-    #         )
-    #     else:
-    #         messagebox.showerror("❌ 새로고침 실패", msg)
-
     def update_ollama_button(self):
         def check_and_update():
             running = is_ollama_running()
             label = "🟢 Ollama 실행 중" if running else "🔴 Ollama 꺼짐"
-            self.ollama_button.config(text=label)
+            # self.ollama_button.config(text=label)
+            self.after(0, lambda: self.ollama_button.config(text=label))
 
         threading.Thread(target=check_and_update, daemon=True).start()
 
@@ -301,3 +340,16 @@ class MainView(tk.Tk):
         text.configure(yscrollcommand=scrollbar.set)
         scrollbar.pack(side="right", fill="y")
         text.pack(fill="both", expand=True)
+
+    def on_apply_model(self):
+        selected = self.model_var.get()
+        for m in self.model_controller.models:
+            if m.name == selected:
+                self.model_controller.selected_model = m
+                break
+
+        success = self.model_controller.apply_selected_model(selected)
+        if success:
+            messagebox.showinfo("성공", f"{selected} 모델이 적용되었습니다.")
+        else:
+            messagebox.showerror("오류", "모델 적용에 실패했습니다.")
