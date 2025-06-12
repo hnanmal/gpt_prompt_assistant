@@ -1,11 +1,19 @@
 📄 main.py
   - def check_and_prompt_ollama() → 
   - def prompt() → 
+📄 controllers\model_controller.py
+  - def __init__() → 
+  - def load_models() → 
+  - def select_fastest_model() → 
+  - def apply_selected_model() → 
 📄 controllers\project_controller.py
   - def __init__() → 
   - def select_project() → 
   - def reload_project() → 
   - def _update_cache_label() → 
+📄 models\ollama_model.py
+  - def __init__() → 
+  - def __repr__() → 
 📄 models\project_model.py
   - def __init__() → 
   - def is_loaded() → 
@@ -25,12 +33,14 @@
 📄 utils\ollama_client.py
   - def ask_ollama() → Ollama 모델에게 프롬프트를 보내고 응답을 받아 반환
 📄 utils\ollama_manager.py
+  - def list_ollama_models() → 현재 Ollama 서버에서 사용 가능한 모델 목록을 반환합니다.
   - def is_ollama_installed() → 
   - def is_ollama_running() → 
   - def is_model_ready() → 
   - def pull_model_if_needed() → 
-  - def start_ollama_model_background() → 
   - def stop_ollama_process() → 
+  - def start_ollama_model_background() → 
+  - def apply_ollama_model() → 주어진 모델을 Ollama 서버에서 적용(로드)합니다.
 📄 utils\parser_utils.py
   - def summarize_functions() → 
   - def get_project_tree() → 현재 폴더 기준으로 전체 구조를 탐색합니다.
@@ -51,6 +61,8 @@
   - def show_custom_toast() → 
   - def update_ollama_status() → Ollama 상태에 따라 요청 버튼 활성화/비활성화
   - def create_widgets() → 
+  - def install_model_popup() → 
+  - def run_model_install_cmd() → 
   - def copy_output() → 
   - def save_output() → 
   - def update_ollama_button() → 
@@ -60,5 +72,8 @@
   - def run_gpt_prompt_thread() → 
   - def update_output() → 
   - def show_function_summary_popup() → 
+  - def on_apply_model() → 
   - def _show() → 
+  - def check_status() → 
+  - def install_and_close() → 
   - def check_and_update() → 

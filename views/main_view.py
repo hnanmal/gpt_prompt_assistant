@@ -279,7 +279,8 @@ class MainView(tk.Tk):
         else:
             confirm = messagebox.askyesno("Ollama 실행", "Ollama를 실행하시겠습니까?")
             if confirm:
-                start_ollama_model_background()
+                model_name = self.viewmodel.selected_model.get()
+                start_ollama_model_background(model_name)
                 messagebox.showinfo(
                     "Ollama 실행됨", "새 CMD 창에서 Ollama가 실행되었습니다."
                 )

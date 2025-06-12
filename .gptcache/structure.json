@@ -1,10 +1,12 @@
 📁 gpt_prompt_assistant/
     📄 main.py
     📁 controllers/
+        📄 model_controller.py
         📄 output_handler.py
         📄 project_controller.py
         📄 project_loader.py
     📁 models/
+        📄 ollama_model.py
         📄 project_model.py
     📁 utils/
         📄 context_builder.py
@@ -19,3 +21,4 @@
         📄 prompt_viewmodel.py
     📁 views/
         📄 main_view.py
+        📄 model_selector.py

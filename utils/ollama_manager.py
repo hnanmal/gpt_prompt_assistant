@@ -64,15 +64,20 @@ def pull_model_if_needed(model="mistral"):
 
 # 현재 실행 중인 ollama 프로세스 종료
 def stop_ollama_process():
-    for proc in psutil.process_iter(attrs=["pid", "name", "cmdline"]):
-        try:
-            if "ollama" in proc.info["name"].lower() or any(
-                "ollama" in arg for arg in proc.info["cmdline"]
-            ):
-                print(f"[Ollama 종료] PID {proc.info['pid']}")
-                proc.terminate()  # 또는 proc.kill()
-        except (psutil.NoSuchProcess, psutil.AccessDenied):
-            continue
+    try:
+        for proc in psutil.process_iter(["pid", "name", "cmdline"]):
+            name = proc.info.get("name")
+            cmdline = proc.info.get("cmdline", [])
+
+            if name and "ollama" in name.lower():
+                proc.terminate()
+                return True
+            elif cmdline and any("ollama" in arg.lower() for arg in cmdline if arg):
+                proc.terminate()
+                return True
+    except Exception as e:
+        print(f"[오류] Ollama 프로세스 종료 중 예외 발생: {e}")
+    return False
 
 
 # 새로운 모델을 백그라운드로 실행
