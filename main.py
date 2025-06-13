@@ -1,6 +1,7 @@
 import tkinter as tk
 from views.main_view import MainView
 from utils.ollama_manager import is_ollama_running, start_ollama_model_background
+from viewmodels.prompt_viewmodel import viewmodel, initialize_model_on_start
 import threading
 from tkinter import messagebox
 
@@ -20,6 +21,7 @@ def check_and_prompt_ollama(model="mistral"):
 
 
 if __name__ == "__main__":
+    initialize_model_on_start(viewmodel)
     app = MainView()
 
     # Ollama 비동기 상태 체크 (UI 띄운 후 실행)

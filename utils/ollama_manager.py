@@ -1,3 +1,4 @@
+import json
 import subprocess
 import shutil
 import psutil
@@ -113,3 +114,21 @@ def apply_ollama_model(model_name: str, base_url="http://localhost:11434") -> bo
     except Exception as e:
         print(f"[Ollama 오류] 모델 적용 실패: {e}")
         return False
+
+
+def get_installed_models():
+    try:
+        result = subprocess.run(["ollama", "list"], capture_output=True, text=True)
+        if result.returncode == 0:
+            lines = result.stdout.strip().split("\n")
+            models = []
+            for line in lines[1:]:  # 첫 줄은 헤더이므로 제외
+                model_name = line.split()[0]  # 공백 기준 첫 번째 항목
+                models.append(model_name)
+            return models
+        else:
+            print("ollama list 실행 실패:", result.stderr)
+            return []
+    except Exception as e:
+        print("오류 발생:", e)
+        return []

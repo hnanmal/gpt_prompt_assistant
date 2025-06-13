@@ -41,25 +41,37 @@
   - def stop_ollama_process() → 
   - def start_ollama_model_background() → 
   - def apply_ollama_model() → 주어진 모델을 Ollama 서버에서 적용(로드)합니다.
+  - def get_installed_models() → 
 📄 utils\parser_utils.py
   - def summarize_functions() → 
   - def get_project_tree() → 현재 폴더 기준으로 전체 구조를 탐색합니다.
   - def extract_functions() → 
   - def load_config() → 
 📄 viewmodels\prompt_viewmodel.py
+  - def initialize_model_on_start() → 프로그램 시작 시 자동으로 phi3:mini 모델이 설치되어 있으면 적용하고,
   - def __init__() → 
+  - def set_current_model() → 
+  - def get_current_model() → 
   - def _ensure_cache_dir() → 
   - def _detect_code_root() → 
   - def load_project() → 
   - def generate_prompt() → 
   - def is_cache_used() → 
-📄 views\main_view.py
+📄 views\layout_builder.py
+  - def build_main_layout() → 전체 main_frame 내부의 좌/우 프레임을 나누고, 각각의 프레임을 반환합니다.
+  - def build_top_frame() → 
+  - def build_input_frame() → 
+  - def build_output_box() → 
+  - def build_button_frame() → 
+  - def build_status_section() → 프로젝트 열기 버튼, 새로고침 버튼, 캐시 상태 라벨, 상태 라벨을 포함한 섹션을 생성합니다.
+📄 views\main_view copy.py
   - def __init__() → 
   - def select_project() → 
   - def reload_project() → 
   - def show_system_toast() → 
   - def show_custom_toast() → 
-  - def update_ollama_status() → Ollama 상태에 따라 요청 버튼 활성화/비활성화
+  - def update_ollama_status() → 
+  - def update_current_model_label() → 
   - def create_widgets() → 
   - def install_model_popup() → 
   - def run_model_install_cmd() → 
@@ -77,3 +89,59 @@
   - def check_status() → 
   - def install_and_close() → 
   - def check_and_update() → 
+📄 views\main_view.py
+  - def __init__() → 
+  - def select_project() → 
+  - def reload_project() → 
+  - def show_system_toast() → 
+  - def show_custom_toast() → 
+  - def update_ollama_status() → 
+  - def update_current_model_label() → 
+  - def create_widgets() → 
+  - def install_model_popup() → 
+  - def run_model_install_cmd() → 
+  - def copy_output() → 
+  - def save_output() → 
+  - def update_ollama_button() → 
+  - def toggle_ollama() → 
+  - def update_tree_structure() → 
+  - def on_user_submit() → 
+  - def run_gpt_prompt_thread() → 
+  - def update_output() → 
+  - def show_function_summary_popup() → 
+  - def on_apply_model() → 
+  - def _show() → 
+  - def check_status() → 
+  - def install_and_close() → 
+  - def check_and_update() → 
+📄 views\main_view_.py
+  - def __init__() → 
+  - def _setup_ui() → 
+  - def on_open_project() → 
+  - def on_refresh() → 
+  - def on_run() → 
+  - def on_apply_model() → 
+  - def install_model_popup() → 
+📄 views\ollama_section.py
+  - def setup_ollama_controls() → Ollama 상태 버튼, 모델 선택, 설치, 적용 관련 위젯 생성
+  - def update_ollama_status() → 
+  - def update_ollama_button() → 
+  - def toggle_ollama() → 
+  - def check_status() → 
+  - def check_and_update() → 
+📄 views\popup_handlers.py
+  - def show_function_summary_popup() → 
+  - def install_model_popup() → 
+  - def run_model_install_cmd() → 
+  - def install_and_close() → 
+📄 views\prompt_section.py
+  - def setup_prompt_controls() → 입력창, 제출 버튼, 출력창, 하단 버튼들(UI) 구성
+  - def on_user_submit() → 
+  - def run_gpt_prompt_thread() → 
+  - def update_output() → 
+  - def copy_output() → 
+  - def save_output() → 
+  - def show_function_summary_popup() → 
+📄 views\sidebar_section.py
+  - def setup_sidebar() → 프로젝트 구조 표시용 사이드바 UI 생성
+  - def update_tree_structure() → ViewModel의 context로부터 프로젝트 트리 문자열을 불러와 출력창 갱신
