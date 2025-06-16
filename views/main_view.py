@@ -12,6 +12,7 @@ from utils.ollama_manager import (
 )
 from win10toast_click import ToastNotifier
 from viewmodels.prompt_viewmodel import PromptViewModel
+from viewmodels.prompt_viewmodel import viewmodel  # 전역 ViewModel
 from utils.parser_utils import summarize_functions
 from controllers.project_controller import ProjectController
 
@@ -24,7 +25,7 @@ class MainView(tk.Tk):
         self.title("GPT Prompt Assistant")
         self.geometry("900x700")
 
-        self.viewmodel = PromptViewModel()
+        self.viewmodel = viewmodel
         self.project_controller = ProjectController(self, self.viewmodel)
         self.project_loaded = False
 

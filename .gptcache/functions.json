@@ -1,6 +1,9 @@
 📄 main.py
   - def check_and_prompt_ollama() → 
   - def prompt() → 
+📄 test.py
+  - def check_and_prompt_ollama() → 
+  - def prompt() → 
 📄 controllers\model_controller.py
   - def __init__() → 
   - def load_models() → 
@@ -59,11 +62,10 @@
   - def is_cache_used() → 
 📄 views\layout_builder.py
   - def build_main_layout() → 전체 main_frame 내부의 좌/우 프레임을 나누고, 각각의 프레임을 반환합니다.
-  - def build_top_frame() → 
-  - def build_input_frame() → 
-  - def build_output_box() → 
-  - def build_button_frame() → 
-  - def build_status_section() → 프로젝트 열기 버튼, 새로고침 버튼, 캐시 상태 라벨, 상태 라벨을 포함한 섹션을 생성합니다.
+  - def build_top_frame() → rigth_frame을 받아서, 그 하위에 top_frame을 생성, 반환합니다.
+  - def build_input_frame() → rigth_frame을 받아서, 그 하위에 input_frame을 생성, 반환합니다.
+  - def build_output_box() → rigth_frame을 받아서, 그 하위에 output_frame을 생성, 반환합니다.
+  - def build_button_frame() → rigth_frame을 받아서, 그 하위에 button_frame을 생성, 반환합니다.
 📄 views\main_view copy.py
   - def __init__() → 
   - def select_project() → 
@@ -119,9 +121,16 @@
   - def _setup_ui() → 
   - def on_open_project() → 
   - def on_refresh() → 
-  - def on_run() → 
+  - def update_tree_structure() → 
+  - def update_current_model_label() → 
+  - def show_function_summary() → 
   - def on_apply_model() → 
   - def install_model_popup() → 
+  - def on_user_submit() → 
+  - def _run_prompt() → 
+  - def _display_result() → 
+  - def copy_output() → 
+  - def save_output() → 
 📄 views\ollama_section.py
   - def setup_ollama_controls() → Ollama 상태 버튼, 모델 선택, 설치, 적용 관련 위젯 생성
   - def update_ollama_status() → 
@@ -145,3 +154,5 @@
 📄 views\sidebar_section.py
   - def setup_sidebar() → 프로젝트 구조 표시용 사이드바 UI 생성
   - def update_tree_structure() → ViewModel의 context로부터 프로젝트 트리 문자열을 불러와 출력창 갱신
+📄 views\status_section.py
+  - def build_status_section() → 프로젝트 열기 버튼, 새로고침 버튼, 캐시 상태 라벨, 상태 라벨을 포함한 섹션을 생성합니다.

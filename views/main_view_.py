@@ -1,8 +1,10 @@
 import tkinter as tk
-from tkinter import messagebox, filedialog, simpledialog
+from tkinter import messagebox
 from ttkbootstrap import Style
 from controllers.model_controller import ModelController
+from controllers.project_controller import ProjectController
 from viewmodels.prompt_viewmodel import PromptViewModel
+from viewmodels.prompt_viewmodel import viewmodel  # 전역 ViewModel
 from views.layout_builder import (
     build_main_layout,
     build_top_frame,
@@ -20,28 +22,44 @@ class MainView(tk.Tk):
         super().__init__()
         self.title("GPT Prompt Assistant")
         self.geometry("1200x800")
-        self.style = Style("cosmo")  # 예시 테마
+        self.style = Style("cosmo")
 
-        self.current_model_var = tk.StringVar(value="(선택 안됨)")
+        # 상태 변수
+        self.project_loaded = False
 
-        self.viewmodel = PromptViewModel()
+        # 핵심 로직 객체
+        # self.viewmodel = PromptViewModel()
+        self.viewmodel = viewmodel
         self.model_controller = ModelController()
+        self.project_controller = ProjectController(self, self.viewmodel)
 
+        # UI 구성
         self._setup_ui()
 
     def _setup_ui(self):
         # 1. 좌우 프레임 구성
         self.sidebar_frame, self.right_frame = build_main_layout(self)
 
-        # 사이드
+        # 2. 사이드바 구성
         setup_sidebar(self.sidebar_frame, self)
 
-        # 2. 상단 프레임
+        # 3. 상단 프레임 + 상태/버튼 구성
         self.top_frame = build_top_frame(self.right_frame)
 
-        # 🔹 상태 / 버튼 섹션 생성 (self.~~ 로 바인딩)
+        # ollama 프레임
+        self.ollama_control_frame = tk.Frame(self.top_frame)
+        self.ollama_control_frame.pack(fill="x", expand=True)
+
+        # Ollama 제어 섹션
+        setup_ollama_controls(self.ollama_control_frame, self)
+
+        # status 프레임
+        self.status_frame = tk.Frame(self.top_frame)
+        self.status_frame.pack(fill="x", expand=True)
+
+        # 상태 위젯
         status_widgets = build_status_section(
-            self.top_frame,
+            self.status_frame,
             on_open_project=self.on_open_project,
             on_refresh=self.on_refresh,
         )
@@ -50,79 +68,102 @@ class MainView(tk.Tk):
         self.cache_label = status_widgets["cache_label"]
         self.status_label = status_widgets["status_label"]
 
-        # 🔹 Ollama 모델 제어 UI 추가
-        setup_ollama_controls(self.top_frame, self)
-
-        # 3. 입력 프레임 (Entry)
+        # 5. 입력창
         self.input_entry = build_input_frame(self.right_frame)
+        self.input_entry.bind("<Return>", self.on_user_submit)
 
-        # 4. 출력 박스
+        self.submit_button = tk.Button(
+            self.right_frame, text="✉️ 요청 보내기", command=self.on_user_submit
+        )
+        self.submit_button.pack(padx=5)
+
+        # 6. 출력박스
         self.output_box = build_output_box(self.right_frame)
 
-        # 5. 버튼 영역
+        # 7. 하단 버튼 영역
         self.button_frame = build_button_frame(self.right_frame)
 
-        # 예시 버튼
-        self.run_button = tk.Button(self.button_frame, text="실행", command=self.on_run)
-        self.run_button.pack()
-
-    # 🔹 실제 핸들러 구현
-    def on_open_project(self):
-        file_path = filedialog.askopenfilename(
-            title="프로젝트 파일 열기",
-            filetypes=[("JSON Files", "*.json"), ("All Files", "*.*")],
+        self.copy_button = tk.Button(
+            self.button_frame, text="📋 복사", command=self.copy_output
         )
-        if file_path:
-            try:
-                with open(file_path, "r", encoding="utf-8") as f:
-                    content = f.read()
-                self.output_box.insert("end", f"[열린 파일 내용]\n{content}\n")
-                self.status_label.config(text=f"✅ 프로젝트 파일 열기 완료")
-            except Exception as e:
-                messagebox.showerror("오류", str(e))
-                self.status_label.config(text="❌ 파일 열기 실패")
+        self.copy_button.pack(side="left", padx=5)
+
+        self.save_button = tk.Button(
+            self.button_frame, text="💾 저장", command=self.save_output
+        )
+        self.save_button.pack(side="left", padx=5)
+
+        self.summary_button = tk.Button(
+            self.button_frame, text="🧠 함수 요약", command=self.show_function_summary
+        )
+        self.summary_button.pack(side="left", padx=5)
+
+        self.update_current_model_label()
+
+    # === 📁 프로젝트 관련 ===
+    def on_open_project(self):
+        self.project_controller.select_project()
 
     def on_refresh(self):
-        self.output_box.delete("1.0", "end")
-        self.status_label.config(text="🔄 출력창 초기화 완료")
+        self.project_controller.reload_project()
 
-    def on_run(self):
-        input_text = self.input_entry.get().strip()
-        if not input_text:
-            messagebox.showwarning("입력 없음", "먼저 입력란에 텍스트를 입력하세요.")
+    def update_tree_structure(self):
+        self.tree_box.config(state="normal")
+        self.tree_box.delete("1.0", tk.END)
+        self.tree_box.insert("1.0", self.viewmodel.context.tree_structure or "(없음)")
+        self.tree_box.config(state="disabled")
+
+    def update_current_model_label(self):
+        current = self.viewmodel.get_current_model()
+        if current:
+            self.status_label.config(text=f"GPT 상태: ✅ ({current})")
+        else:
+            self.status_label.config(text="GPT 상태: ❌")
+
+    def show_function_summary(self):
+        if not self.project_loaded:
+            messagebox.showwarning("경고", "먼저 프로젝트를 열어주세요.")
             return
 
-        self.output_box.insert("end", f"👉 입력: {input_text}\n")
+        summary = self.viewmodel.context.function_summary or "(요약 없음)"
 
-        try:
-            # 예시: Ollama 호출 시뮬레이션
-            response = self.model_controller.query_model(input_text)
-            self.output_box.insert("end", f"🧠 응답: {response}\n\n")
-            self.status_label.config(text="✅ 응답 생성 완료")
-        except Exception as e:
-            self.output_box.insert("end", f"[오류 발생] {str(e)}\n")
-            self.status_label.config(text="❌ 오류 발생")
+        summary_window = tk.Toplevel(self)
+        summary_window.title("함수 요약 결과")
+        summary_window.geometry("800x600")
 
+        from tkinter import scrolledtext
+
+        text_widget = scrolledtext.ScrolledText(summary_window, wrap=tk.WORD)
+        text_widget.pack(fill="both", expand=True, padx=10, pady=10)
+        text_widget.insert("1.0", summary)
+        text_widget.config(state="disabled")
+
+    # === 🧠 모델 적용 ===
     def on_apply_model(self):
-        selected = self.viewmodel.get_current_model()
+        selected = self.model_var.get()
         if not selected:
             messagebox.showwarning("모델 선택", "먼저 사용할 모델을 선택하세요.")
             return
 
+        # ✅ 선택한 모델을 controller에도 반영
+        self.model_controller.selected_model = next(
+            (m for m in self.model_controller.models if m.name == selected), None
+        )
+
         success = self.model_controller.apply_selected_model(selected)
         if success:
-            self.status_label.config(text=f"✅ {selected} 모델 적용됨")
-            self.current_model_var.set(selected)
+            self.update_current_model_label()
         else:
             self.status_label.config(text="❌ 모델 적용 실패")
 
     def install_model_popup(self):
+        import tkinter.simpledialog as simpledialog
+        from utils.ollama_manager import install_ollama_model
+
         model_name = simpledialog.askstring(
             "모델 설치", "설치할 모델 이름을 입력하세요:"
         )
         if model_name:
-            from utils.ollama_manager import install_ollama_model
-
             try:
                 self.status_label.config(text=f"⏳ {model_name} 설치 중...")
                 self.update()
@@ -133,3 +174,57 @@ class MainView(tk.Tk):
                     self.status_label.config(text=f"❌ {model_name} 설치 실패")
             except Exception as e:
                 self.status_label.config(text=f"❌ 오류 발생: {e}")
+
+    # === 🧾 입력/출력 관련 ===
+    def on_user_submit(self, event=None):
+        if not self.project_loaded:
+            messagebox.showwarning("경고", "먼저 프로젝트를 열어주세요.")
+            return
+
+        user_input = self.input_entry.get()
+        if not user_input.strip():
+            return
+
+        self.status_label.config(text="⏳ GPT 응답 대기 중...")
+        self.output_box.delete("1.0", tk.END)
+        self.submit_button.config(state="disabled")
+
+        import threading
+
+        threading.Thread(
+            target=self._run_prompt, args=(user_input,), daemon=True
+        ).start()
+
+    def _run_prompt(self, user_input):
+        result = self.viewmodel.generate_prompt(user_input)
+        self.after(0, lambda: self._display_result(result))
+
+    def _display_result(self, result):
+        self.output_box.insert(tk.END, result)
+        self.status_label.config(text="✅ 완료")
+        self.submit_button.config(state="normal")
+
+    def copy_output(self):
+        text = self.output_box.get("1.0", tk.END).strip()
+        if text:
+            self.clipboard_clear()
+            self.clipboard_append(text)
+            self.update()
+
+    def save_output(self):
+        from tkinter import filedialog
+
+        text = self.output_box.get("1.0", tk.END).strip()
+        if not text:
+            messagebox.showwarning("경고", "저장할 내용이 없습니다.")
+            return
+
+        file_path = filedialog.asksaveasfilename(
+            defaultextension=".txt",
+            filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")],
+            title="결과 저장",
+        )
+        if file_path:
+            with open(file_path, "w", encoding="utf-8") as f:
+                f.write(text)
+            messagebox.showinfo("저장 완료", f"결과가 저장되었습니다:\n{file_path}")

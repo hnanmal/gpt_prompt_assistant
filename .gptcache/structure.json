@@ -1,5 +1,6 @@
 📁 gpt_prompt_assistant/
     📄 main.py
+    📄 test.py
     📁 controllers/
         📄 model_controller.py
         📄 output_handler.py
@@ -29,3 +30,4 @@
         📄 popup_handlers.py
         📄 prompt_section.py
         📄 sidebar_section.py
+        📄 status_section.py

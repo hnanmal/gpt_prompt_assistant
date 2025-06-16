@@ -16,38 +16,45 @@ def setup_ollama_controls(parent, app):
     """
     Ollama 상태 버튼, 모델 선택, 설치, 적용 관련 위젯 생성
     :param parent: top_frame or 다른 프레임
-    :param app: MainView 인스턴스 (상호작용 위함)
+    :param app: MainView 인스턴스
     """
+    import tkinter as tk
+    from tkinter import ttk
+
     # Ollama 상태 버튼
     app.ollama_button = tk.Button(
         parent, text="🔄 Ollama 상태 확인 중...", command=lambda: toggle_ollama(app)
     )
-    app.ollama_button.pack(side="left", padx=10)
-    update_ollama_button(app)  # 초기 상태 반영
+    app.ollama_button.pack(side="left", padx=10, pady=10, anchor="w")
+    update_ollama_button(app)
+
+    # ✅ 모델 리스트 로드
+    models = app.model_controller.load_models()
+    model_names = [m.name for m in models]
 
     # 모델 드롭다운
     app.model_var = tk.StringVar()
-    app.model_dropdown = ttk.Combobox(app, textvariable=app.model_var, state="readonly")
-    app.model_dropdown.pack(pady=5)
+    app.model_dropdown = ttk.Combobox(
+        parent, textvariable=app.model_var, values=model_names, state="readonly"
+    )
+    app.model_dropdown.pack(side="left", padx=5, pady=5)
+
+    # 기본 선택값 지정 (선택적)
+    if model_names:
+        app.model_var.set(model_names[0])
+        app.viewmodel.set_current_model(model_names[0])
 
     # 모델 적용 버튼
-    app.apply_model_btn = ttk.Button(app, text="모델 적용", command=app.on_apply_model)
-    app.apply_model_btn.pack(pady=5)
+    app.apply_model_btn = ttk.Button(
+        parent, text="모델 적용", command=app.on_apply_model
+    )
+    app.apply_model_btn.pack(side="left", padx=5, pady=5)
 
     # 모델 설치 버튼
     app.install_model_button = ttk.Button(
-        app, text="모델 설치", command=app.install_model_popup
+        parent, text="모델 설치", command=app.install_model_popup
     )
-    app.install_model_button.pack(pady=5)
-
-    # 현재 모델 상태 라벨
-    app.current_model_label = tk.Label(
-        parent,
-        textvariable=app.current_model_var,
-        font=("맑은 고딕", 10, "bold"),
-        fg="#333333",
-    )
-    app.current_model_label.pack(side="right", padx=10)
+    app.install_model_button.pack(side="left", padx=5, pady=5)
 
 
 def update_ollama_status(app):

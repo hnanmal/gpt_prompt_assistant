@@ -1,5 +1,5 @@
 import tkinter as tk
-from views.main_view import MainView
+from views.main_view_ import MainView
 from utils.ollama_manager import is_ollama_running, start_ollama_model_background
 
 # from viewmodels.prompt_viewmodel import viewmodel, initialize_model_on_start
