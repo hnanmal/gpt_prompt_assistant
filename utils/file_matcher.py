@@ -48,38 +48,6 @@ def extract_function_bodies_from_js(filepath):
         return []
 
 
-# def find_related_files(folder_path, keywords):
-#     related = []
-#     keywords = expand_keywords(keywords)
-
-#     for root, _, files in os.walk(folder_path):
-#         for file in files:
-#             if not file.endswith((".py", ".js", ".jsx")):
-#                 continue
-
-#             full_path = os.path.join(root, file)
-#             try:
-#                 content = ""
-#                 if file.endswith(".py"):
-#                     functions = extract_function_bodies_from_python(full_path)
-#                 else:
-#                     functions = extract_function_bodies_from_js(full_path)
-
-#                 content += "\n".join([body for _, body in functions])
-#                 with open(full_path, "r", encoding="utf-8") as f:
-#                     content += f.read()
-
-#                 if any(kw.lower() in content.lower() for kw in keywords):
-#                     related.append(os.path.relpath(full_path, folder_path))
-
-#             except Exception:
-#                 continue
-
-#     return related
-
-import os
-
-
 EXCLUDED_DIRS = {".venv", "venv", "__pycache__", ".git", ".idea", ".gptcache"}
 SUPPORTED_EXTS = [".py", ".js", ".jsx"]
 

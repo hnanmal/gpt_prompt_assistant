@@ -3,30 +3,38 @@ import ast
 import re
 
 
-# def generate_structure_summary(root_path: str, max_depth: int = 3) -> str:
-#     """
-#     주어진 루트 경로로부터 폴더 및 파일 구조를 문자열로 요약합니다.
-#     """
-#     summary_lines = []
+def infer_project_context(folder_path):
+    EXCLUDE_DIRS = {"venv", ".venv", "__pycache__", ".git", "node_modules"}
+    language_set = set()
+    file_count = 0
+    notebook = False
 
-#     def walk(path, depth):
-#         if depth > max_depth:
-#             return
-#         try:
-#             entries = sorted(os.listdir(path))
-#         except Exception:
-#             return
-#         for entry in entries:
-#             full_path = os.path.join(path, entry)
-#             prefix = "  " * depth
-#             if os.path.isdir(full_path):
-#                 summary_lines.append(f"{prefix}📁 {entry}/")
-#                 walk(full_path, depth + 1)
-#             elif os.path.isfile(full_path):
-#                 summary_lines.append(f"{prefix}📄 {entry}")
+    for root, dirs, files in os.walk(folder_path):
+        # 디렉토리 제외
+        dirs[:] = [d for d in dirs if d not in EXCLUDE_DIRS]
 
-#     walk(root_path, 0)
-#     return "\n".join(summary_lines)
+        for file in files:
+            ext = os.path.splitext(file)[1].lower()
+            if ext in [".py", ".ipynb", ".js", ".ts", ".html", ".css"]:
+                file_count += 1
+
+                if ext == ".py":
+                    language_set.add("Python")
+                elif ext == ".ipynb":
+                    notebook = True
+                elif ext == ".js":
+                    language_set.add("JavaScript")
+                elif ext == ".html":
+                    language_set.add("HTML")
+
+    return {
+        "language": ", ".join(sorted(language_set)) or "Unknown",
+        "notebooks": notebook,
+        "file_count": file_count,
+        "js_detected": "JavaScript" in language_set,
+        "html_detected": "HTML" in language_set,
+        "python_detected": "Python" in language_set,
+    }
 
 
 def extract_functions_from_file(filepath: str) -> list[str]:

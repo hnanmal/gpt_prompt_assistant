@@ -3,6 +3,7 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from viewmodels.prompt_viewmodel import PromptViewModel
+from views.sidebar_section import update_tree_structure
 
 
 class ProjectController:
@@ -18,7 +19,7 @@ class ProjectController:
 
             if success:
                 self.view.project_loaded = True
-                self.view.update_tree_structure()
+                update_tree_structure(self.view)
                 messagebox.showinfo("로드 완료", msg)
             else:
                 messagebox.showerror("로드 실패", msg)
@@ -34,7 +35,7 @@ class ProjectController:
         self._update_cache_label(used_cache)
 
         if success:
-            self.view.update_tree_structure()
+            update_tree_structure(self.view)
             messagebox.showinfo(
                 "✅ 새로고침 완료", "프로젝트 정보를 새로 분석하고 캐시를 갱신했습니다."
             )

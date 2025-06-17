@@ -54,15 +54,6 @@ def pull_model_if_needed(model="mistral"):
         return False
 
 
-# def start_ollama_model_background(model="mistral"):
-#     try:
-#         subprocess.Popen(["start", "cmd", "/k", f"ollama run {model}"], shell=True)
-#         return True
-#     except Exception as e:
-#         print(f"[Ollama] 모델 실행 실패: {e}")
-#         return False
-
-
 # 현재 실행 중인 ollama 프로세스 종료
 def stop_ollama_process():
     try:
@@ -132,3 +123,17 @@ def get_installed_models():
     except Exception as e:
         print("오류 발생:", e)
         return []
+
+
+def install_ollama_model(model_name: str):
+    """
+    주어진 모델 이름으로 ollama 모델을 설치합니다.
+    새로운 콘솔 창에서 실행됩니다.
+    """
+    try:
+        subprocess.Popen(
+            ["cmd.exe", "/k", f"ollama pull {model_name}"],
+            creationflags=subprocess.CREATE_NEW_CONSOLE,
+        )
+    except Exception as e:
+        print(f"[오류] 모델 설치 실패: {e}")

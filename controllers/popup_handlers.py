@@ -1,4 +1,4 @@
-# views/popup_handlers.py
+# controllers/popup_handlers.py
 
 import tkinter as tk
 from tkinter import messagebox
@@ -53,6 +53,17 @@ def install_model_popup(app):
     install_btn.pack(pady=5)
 
 
+def show_model_apply_result_popup(model_name: str, success: bool):
+    if success:
+        messagebox.showinfo(
+            "모델 적용 성공", f"✅ 모델 '{model_name}'이(가) 성공적으로 적용되었습니다."
+        )
+    else:
+        messagebox.showerror(
+            "모델 적용 실패", f"❌ 모델 '{model_name}' 적용에 실패했습니다."
+        )
+
+
 def run_model_install_cmd(model_name: str):
     try:
         subprocess.Popen(
@@ -61,3 +72,7 @@ def run_model_install_cmd(model_name: str):
         )
     except Exception as e:
         messagebox.showerror("오류", f"모델 설치 실패: {e}")
+
+
+def show_custom_toast(app, message):
+    messagebox.showinfo("알림", f"{message}")

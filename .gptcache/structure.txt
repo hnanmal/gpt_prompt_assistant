@@ -1,9 +1,9 @@
 📁 gpt_prompt_assistant/
     📄 main.py
-    📄 test.py
     📁 controllers/
         📄 model_controller.py
         📄 output_handler.py
+        📄 popup_handlers.py
         📄 project_controller.py
         📄 project_loader.py
     📁 models/
@@ -22,12 +22,9 @@
         📄 prompt_viewmodel.py
     📁 views/
         📄 layout_builder.py
-        📄 main_view copy.py
         📄 main_view.py
-        📄 main_view_.py
         📄 model_selector.py
         📄 ollama_section.py
-        📄 popup_handlers.py
         📄 prompt_section.py
         📄 sidebar_section.py
         📄 status_section.py
