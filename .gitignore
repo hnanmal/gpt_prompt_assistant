@@ -1,8 +1,25 @@
-# Python 가상환경 무시
-.venv/
-venv/
-env/
-ENV/
+# ▶ Python bytecode / cache
 __pycache__/
 *.py[cod]
-*.egg-info/
+*.pyo
+
+# ▶ Virtual environment
+venv/
+.env/
+.venv/
+
+# ▶ IDE/Editor settings
+.vscode/
+.idea/
+*.swp
+
+# ▶ PyInstaller build output
+build/
+dist/
+*.spec
+*.toc
+*.log
+
+# ▶ Windows/Mac generated files
+*.DS_Store
+Thumbs.db

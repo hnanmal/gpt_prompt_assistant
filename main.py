@@ -1,4 +1,6 @@
 import tkinter as tk
+
+
 from views.main_view import MainView
 from utils.ollama_manager import is_ollama_running, start_ollama_model_background
 

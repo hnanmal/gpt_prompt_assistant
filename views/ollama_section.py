@@ -2,6 +2,9 @@
 
 import threading
 import tkinter as tk
+
+# from tkinter import ttk
+
 from ttkbootstrap import ttk
 from tkinter import messagebox
 
@@ -19,8 +22,6 @@ def setup_ollama_controls(parent, app):
     :param parent: top_frame or 다른 프레임
     :param app: MainView 인스턴스
     """
-    import tkinter as tk
-    from tkinter import ttk
 
     # Ollama 상태 버튼
     app.ollama_button = tk.Button(
