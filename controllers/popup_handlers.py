@@ -76,3 +76,24 @@ def run_model_install_cmd(model_name: str):
 
 def show_custom_toast(app, message):
     messagebox.showinfo("알림", f"{message}")
+
+
+def show_custom_about_popup(app, title="About", message=""):
+    popup = tk.Toplevel(app)
+    popup.title(title)
+    popup.geometry("700x500")  # 폭, 높이 지정 가능
+    popup.transient(app)
+    popup.grab_set()
+
+    text_widget = tk.Text(popup, wrap="word", font=("Segoe UI", 10))
+    text_widget.insert("1.0", message)
+    text_widget.config(state="disabled")
+
+    scrollbar = tk.Scrollbar(popup, command=text_widget.yview)
+    text_widget.configure(yscrollcommand=scrollbar.set)
+
+    scrollbar.pack(side="right", fill="y")
+    text_widget.pack(side="left", fill="both", expand=True, padx=10, pady=10)
+
+    # close_button = tk.Button(popup, text="닫기", command=popup.destroy)
+    # close_button.pack(pady=(0, 10))

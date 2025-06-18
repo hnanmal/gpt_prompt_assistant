@@ -16,6 +16,7 @@ from controllers.popup_handlers import show_model_apply_result_popup
 from views.sidebar_section import setup_sidebar
 from views.status_section import build_status_section
 from views.prompt_section import setup_prompt_controls  # ✅ 입출력 UI 통합
+from views.menus import create_menubar
 
 
 class MainView(tk.Tk):
@@ -24,6 +25,9 @@ class MainView(tk.Tk):
         self.title("GPT Prompt Assistant")
         self.geometry("1200x800")
         self.style = Style("cosmo")
+
+        # 메뉴 설정
+        create_menubar(self, self.on_open_project)
 
         self.project_loaded = False
         self.viewmodel = viewmodel
