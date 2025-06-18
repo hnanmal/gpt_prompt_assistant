@@ -29,4 +29,12 @@ echo ✅ 심볼릭 링크 생성 완료!
 echo    실제 모델 파일은 D:\ollama 에 저장됩니다.
 echo.
 
+:: Ollama 모델 설치
+echo ☁️ mistral 모델을 다운로드합니다... (인터넷 연결 필요)
+ollama pull phi3:mini
+
+echo.
+echo ✅ 설치 완료! Ollama 모델이 준비되었습니다.
+echo.
+
 pause

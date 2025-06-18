@@ -1,121 +1,200 @@
+
 📄 main.py
-  - def check_and_prompt_ollama() → 
-  - def prompt() → 
+  - def check_and_prompt_ollama()
+  - def prompt()
+
+📄 controllers\menu_handlers.py
+  - def save_result()
+  - def show_about()
+  - def show_version()
+
 📄 controllers\model_controller.py
-  - def __init__() → 
-  - def load_models() → 
-  - def select_fastest_model() → 
-  - def apply_selected_model() → 
+  - def __init__()
+  - def load_models()
+  - def select_fastest_model()
+  - def apply_selected_model()
+
 📄 controllers\output_handler.py
-  - def start_ollama_analysis() → 
-  - def on_token() → 
-  - def on_done() → 
+  - def start_ollama_analysis()
+  - def on_token()
+  - def on_done()
+
 📄 controllers\popup_handlers.py
-  - def show_function_summary_popup() → 
-  - def install_model_popup() → 
-  - def show_model_apply_result_popup() → 
-  - def run_model_install_cmd() → 
-  - def show_custom_toast() → 
-  - def install_and_close() → 
+  - def show_function_summary_popup()
+  - def install_model_popup()
+  - def show_model_apply_result_popup()
+  - def run_model_install_cmd()
+  - def show_custom_toast()
+  - def show_custom_about_popup()
+  - def install_and_close()
+
 📄 controllers\project_controller.py
-  - def __init__() → 
-  - def select_project() → 
-  - def reload_project() → 
-  - def _update_cache_label() → 
+  - def __init__()
+  - def select_project()
+  - def reload_project()
+  - def _update_cache_label()
+
 📄 models\ollama_model.py
-  - def __init__() → 
-  - def __repr__() → 
+  - def __init__()
+  - def __repr__()
+
 📄 models\project_model.py
-  - def __init__() → 
-  - def is_loaded() → 
+  - def __init__()
+  - def is_loaded()
+
 📄 utils\context_builder.py
-  - def infer_project_context() → 
-  - def extract_functions_from_file() → .py 파일에서 함수 정의 이름들을 추출합니다.
-  - def extract_functions_from_js_file() → .js 또는 .jsx 파일에서 함수 이름 추출 (function, arrow function, export default 등)
-  - def generate_structure_summary() → 주어진 루트 경로로부터 폴더 및 파일 구조를 문자열로 요약합니다.
-  - def combine_context() → 프로젝트 설명 + 구조 요약 + 함수 요약을 하나의 프롬프트 컨텍스트로 병합합니다.
-  - def walk() → 
+  - def infer_project_context()
+  - def extract_functions_from_file()
+      .py 파일에서 함수 정의 이름들을 추출합니다.
+  - def extract_functions_from_js_file()
+      .js 또는 .jsx 파일에서 함수 이름 추출 (function, arrow function, export default 등)
+  - def generate_structure_summary()
+      주어진 루트 경로로부터 폴더 및 파일 구조를 문자열로 요약합니다.
+      __pycache__, .pyc, .venv, .git 등은 제외합니다.
+  - def combine_context()
+      프로젝트 설명 + 구조 요약 + 함수 요약을 하나의 프롬프트 컨텍스트로 병합합니다.
+  - def walk()
+
 📄 utils\file_matcher.py
-  - def expand_keywords() → 
-  - def extract_function_bodies_from_python() → 
-  - def extract_function_bodies_from_js() → 
-  - def find_related_files() → 
+  - def expand_keywords()
+  - def extract_function_bodies_from_python()
+  - def extract_function_bodies_from_js()
+  - def find_related_files()
+
 📄 utils\keyword_utils.py
-  - def extract_keywords() → 사용자의 요청 문장에서 의미 있는 키워드만 추출한다.
+  - def extract_keywords()
+      사용자의 요청 문장에서 의미 있는 키워드만 추출한다.
+      한글/영어 단어 위주로 처리하며, 2글자 이상 + 불용어 제거
+
 📄 utils\ollama_client.py
-  - def ask_ollama() → Ollama 모델에게 프롬프트를 보내고 응답을 받아 반환
-  - def ask_ollama_stream() → 
+  - def ask_ollama()
+      Ollama 모델에게 프롬프트를 보내고 응답을 받아 반환
+  - def ask_ollama_stream()
+
 📄 utils\ollama_manager.py
-  - def list_ollama_models() → 현재 Ollama 서버에서 사용 가능한 모델 목록을 반환합니다.
-  - def is_ollama_installed() → 
-  - def is_ollama_running() → 
-  - def is_model_ready() → 
-  - def pull_model_if_needed() → 
-  - def stop_ollama_process() → 
-  - def start_ollama_model_background() → 
-  - def apply_ollama_model() → 주어진 모델을 Ollama 서버에서 적용(로드)합니다.
-  - def get_installed_models() → 
-  - def install_ollama_model() → 주어진 모델 이름으로 ollama 모델을 설치합니다.
+  - def list_ollama_models()
+      현재 Ollama 서버에서 사용 가능한 모델 목록을 반환합니다.
+      
+      Returns:
+      list[str]: 설치된 모델 이름 리스트
+  - def is_ollama_installed()
+  - def is_ollama_running()
+  - def is_model_ready()
+  - def pull_model_if_needed()
+  - def stop_ollama_process()
+  - def start_ollama_model_background()
+  - def apply_ollama_model()
+      주어진 모델을 Ollama 서버에서 적용(로드)합니다.
+      
+      Returns:
+      bool: 성공 여부
+  - def get_installed_models()
+  - def install_ollama_model()
+      주어진 모델 이름으로 ollama 모델을 설치합니다.
+      새로운 콘솔 창에서 실행됩니다.
+
 📄 utils\parser_utils.py
-  - def summarize_functions() → 
-  - def get_project_tree() → 현재 폴더 기준으로 전체 구조를 탐색합니다.
-  - def extract_functions() → 
-  - def load_config() → 
+  - def summarize_functions()
+  - def get_project_tree()
+      현재 폴더 기준으로 전체 구조를 탐색합니다.
+      - __pycache__, .venv, .git, .idea, .gptcache 제외
+      - .pyc 파일 제외
+  - def extract_functions()
+      _summary_
+      
+      Args:
+      root_dir (_type_): _description_
+      
+      Returns:
+      _type_: _description_
+  - def load_config()
+
 📄 viewmodels\prompt_viewmodel.py
-  - def initialize_model_on_start() → 
-  - def __init__() → 
-  - def stop_streaming() → 
-  - def reset_stop_flag() → 
-  - def should_stop() → 
-  - def set_current_model() → 
-  - def get_current_model() → 
-  - def _ensure_cache_dir() → 
-  - def _detect_code_root() → 
-  - def load_project() → 
-  - def set_last_ollama_result() → 
-  - def get_last_ollama_result() → 
-  - def generate_prompt() → 
-  - def is_cache_used() → 
-  - def build_stream_prompt() → 
+  - def initialize_model_on_start()
+  - def __init__()
+  - def stop_streaming()
+  - def reset_stop_flag()
+  - def should_stop()
+  - def set_current_model()
+  - def get_current_model()
+  - def _ensure_cache_dir()
+  - def _detect_code_root()
+  - def load_project()
+  - def set_last_ollama_result()
+  - def get_last_ollama_result()
+  - def build_stream_prompt()
+  - def generate_prompt()
+  - def is_cache_used()
+
 📄 views\layout_builder.py
-  - def build_main_layout() → 전체 main_frame 내부의 좌/우 프레임을 나누고, 각각의 프레임을 반환합니다.
-  - def build_top_frame() → rigth_frame을 받아서, 그 하위에 top_frame을 생성, 반환합니다.
-  - def build_input_frame() → rigth_frame을 받아서, 그 하위에 input_frame을 생성, 반환합니다.
-  - def build_output_box() → rigth_frame을 받아서, 그 하위에 output_frame을 생성, 반환합니다.
-  - def build_button_frame() → rigth_frame을 받아서, 그 하위에 button_frame을 생성, 반환합니다.
+  - def build_main_layout()
+      전체 main_frame 내부의 좌/우 프레임을 나누고, 각각의 프레임을 반환합니다.
+  - def build_top_frame()
+      rigth_frame을 받아서, 그 하위에 top_frame을 생성, 반환합니다.
+  - def build_input_frame()
+      rigth_frame을 받아서, 그 하위에 input_frame을 생성, 반환합니다.
+      input_frame은 사용자가 입력하는 초안 프롬프트를 입력받는 역활.
+  - def build_output_box()
+      rigth_frame을 받아서, 그 하위에 output_frame을 생성, 반환합니다.
+      output_frame을 사용자가 입력하는 초안 프롬프트를 Ollama 모델이 보강한 결과를 출력하는 역활.
+  - def build_button_frame()
+      rigth_frame을 받아서, 그 하위에 button_frame을 생성, 반환합니다.
+      copy_button, save_button, func_summary_button 이 이 프레임의 내포 대상.
+
 📄 views\main_view.py
-  - def __init__() → 
-  - def _setup_ui() → 
-  - def on_open_project() → 
-  - def on_refresh() → 
-  - def start_ollama_status_thread() → 
-  - def update_current_model_label() → 
-  - def on_apply_model() → 
-  - def install_model_popup() → 
-  - def check_loop() → 
+  - def __init__()
+  - def _resource_path()
+      PyInstaller 환경에서도 리소스 경로를 올바르게 가져오기 위한 함수
+  - def _setup_ui()
+  - def on_open_project()
+  - def on_refresh()
+  - def start_ollama_status_thread()
+  - def update_current_model_label()
+  - def on_apply_model()
+  - def install_model_popup()
+  - def check_loop()
+
+📄 views\menus.py
+  - def create_menubar()
+
 📄 views\ollama_section.py
-  - def setup_ollama_controls() → Ollama 상태 버튼, 모델 선택, 설치, 적용 관련 위젯 생성
-  - def update_ollama_status() → 
-  - def update_ollama_button() → 
-  - def toggle_ollama() → 
-  - def check_status() → 
-  - def check_and_update() → 
+  - def setup_ollama_controls()
+      Ollama 상태 버튼, 모델 선택, 설치, 적용 관련 위젯 생성
+      :param parent: top_frame or 다른 프레임
+      :param app: MainView 인스턴스
+  - def update_ollama_status()
+  - def update_ollama_button()
+  - def toggle_ollama()
+  - def check_status()
+  - def check_and_update()
+
 📄 views\prompt_section.py
-  - def setup_prompt_controls() → 입력창, 제출 버튼, 출력창, 하단 버튼들(UI) 구성
-  - def append_streaming_token() → 
-  - def run_ollama_stream_thread() → 
-  - def on_user_submit() → 
-  - def run_gpt_prompt_thread() → 
-  - def update_output() → 
-  - def copy_output() → 
-  - def save_output() → 
-  - def show_function_summary_popup() → 
-  - def on_token_callback() → 
-  - def on_complete_callback() → 
-  - def on_token() → 
-  - def on_complete() → 
+  - def setup_prompt_controls()
+      입력창, 제출 버튼, 출력창, 하단 버튼들(UI) 구성
+      :param parent: 오른쪽 프레임 (right_frame)
+      :param app: MainView 인스턴스
+  - def append_streaming_token()
+  - def run_ollama_stream_thread()
+  - def on_user_submit()
+  - def run_gpt_prompt_thread()
+  - def update_output()
+  - def copy_output()
+  - def save_output()
+  - def show_function_summary_popup()
+  - def on_token_callback()
+  - def on_complete_callback()
+  - def on_token()
+  - def on_complete()
+
 📄 views\sidebar_section.py
-  - def setup_sidebar() → 프로젝트 구조 표시용 사이드바 UI 생성
-  - def update_tree_structure() → ViewModel의 context로부터 프로젝트 트리 문자열을 불러와 출력창 갱신
+  - def setup_sidebar()
+      프로젝트 구조 표시용 사이드바 UI 생성
+      :param parent: main_frame
+      :param app: MainView 인스턴스
+      :return: 사이드바 프레임
+  - def update_tree_structure()
+      ViewModel의 context로부터 프로젝트 트리 문자열을 불러와 출력창 갱신
+
 📄 views\status_section.py
-  - def build_status_section() → 프로젝트 열기 버튼, 새로고침 버튼, 캐시 상태 라벨, 상태 라벨을 포함한 섹션을 생성합니다.
+  - def build_status_section()
+      프로젝트 열기 버튼, 새로고침 버튼, 캐시 상태 라벨, 상태 라벨을 포함한 섹션을 생성합니다.

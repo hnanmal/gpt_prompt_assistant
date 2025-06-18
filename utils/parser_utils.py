@@ -46,6 +46,14 @@ def get_project_tree(base_path):
 
 
 def extract_functions(root_dir):
+    """_summary_
+
+    Args:
+        root_dir (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
     result = ""
     for dirpath, dirnames, filenames in os.walk(root_dir):
         # ✅ 무시할 디렉토리 추가
@@ -66,14 +74,47 @@ def extract_functions(root_dir):
                     ]
                     if funcs:
                         rel_path = os.path.relpath(path, root_dir)
-                        result += f"📄 {rel_path}\n"
+                        result += f"\n📄 {rel_path}\n"
                         for func in funcs:
                             doc = ast.get_docstring(func)
-                            summary = doc.split("\n")[0] if doc else ""
-                            result += f"  - def {func.name}() → {summary}\n"
-                except:
-                    pass
+                            result += f"  - def {func.name}()\n"
+                            if doc:
+                                for line in doc.strip().splitlines():
+                                    result += f"      {line.strip()}\n"
+                except Exception as e:
+                    result += f"\n[⚠️ Error parsing {fname}: {e}]\n"
     return result
+
+
+# def extract_functions(root_dir):
+#     result = ""
+#     for dirpath, dirnames, filenames in os.walk(root_dir):
+#         # ✅ 무시할 디렉토리 추가
+#         dirnames[:] = [
+#             d
+#             for d in dirnames
+#             if d not in {"__pycache__", ".venv", "venv", ".git", ".idea", ".gptcache"}
+#         ]
+
+#         for fname in filenames:
+#             if fname.endswith(".py"):
+#                 path = os.path.join(dirpath, fname)
+#                 try:
+#                     with open(path, "r", encoding="utf-8") as f:
+#                         tree = ast.parse(f.read())
+#                     funcs = [
+#                         n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef)
+#                     ]
+#                     if funcs:
+#                         rel_path = os.path.relpath(path, root_dir)
+#                         result += f"📄 {rel_path}\n"
+#                         for func in funcs:
+#                             doc = ast.get_docstring(func)
+#                             summary = doc.split("\n")[0] if doc else ""
+#                             result += f"  - def {func.name}() → {summary}\n"
+#                 except:
+#                     pass
+#     return result
 
 
 def load_config(project_root):

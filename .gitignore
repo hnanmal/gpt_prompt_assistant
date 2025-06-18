@@ -23,3 +23,19 @@ dist/
 # ▶ Windows/Mac generated files
 *.DS_Store
 Thumbs.db
+
+# ❌ 빌드된 실행 파일 (.exe)
+*.exe
+
+# ❌ Inno Setup 출력 파일들 (예: 설치 프로그램, 로그, 임시 파일 등)
+*.iss
+*.isl
+*.isl~
+*.log
+*.tmp
+*.bak
+
+# Inno Setup 출력 폴더
+/installer/
+/Output/
+

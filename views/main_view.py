@@ -1,8 +1,9 @@
+import os
+import sys
 import threading
 import tkinter as tk
 from tkinter import messagebox
 
-# import ttkbootstrap.themes
 
 from ttkbootstrap import Style
 
@@ -26,6 +27,11 @@ class MainView(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("GPT Prompt Assistant")
+
+        # 아이콘 설정 (PyInstaller 환경과 일반 실행 환경 모두 고려)
+        icon_path = self._resource_path("resources/app_icon.ico")
+        self.iconbitmap(icon_path)
+
         self.geometry("1200x800")
         self.style = Style("cosmo")
 
@@ -39,6 +45,17 @@ class MainView(tk.Tk):
 
         self._setup_ui()
         self.update_current_model_label()
+
+    def _resource_path(self, relative_path):
+        """PyInstaller 환경에서도 리소스 경로를 올바르게 가져오기 위한 함수"""
+        try:
+            # PyInstaller로 패키징된 경우
+            base_path = sys._MEIPASS
+        except AttributeError:
+            # 개발환경에서 실행하는 경우
+            base_path = os.path.abspath(".")
+
+        return os.path.join(base_path, relative_path)
 
     def _setup_ui(self):
         self.sidebar_frame, self.right_frame = build_main_layout(self)

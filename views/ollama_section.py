@@ -47,11 +47,14 @@ def setup_ollama_controls(parent, app):
     #     app.viewmodel.set_current_model(model_names[0])
 
     # 값이 목록에 있을 경우 해당 인덱스 선택
+    values = app.model_dropdown["values"]
     current_model = viewmodel.get_current_model()
-    if current_model in app.model_dropdown["values"]:
-        app.model_dropdown.current(app.model_dropdown["values"].index(current_model))
-    else:
-        app.model_dropdown.current(0)  # fallback
+
+    if values:  # 값이 있을 때만 처리
+        if isinstance(current_model, str) and current_model in values:
+            app.model_dropdown.current(values.index(current_model))
+        else:
+            app.model_dropdown.current(0)  # fallback
 
     # 모델 적용 버튼
     app.apply_model_btn = ttk.Button(

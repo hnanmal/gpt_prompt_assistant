@@ -1,7 +1,7 @@
 # 📁 core/app_info.py
 
 APP_NAME = "GPT Prompt Assistant"
-VERSION = "1.0.0"
+VERSION = "1.0.1"
 AUTHOR = "Done by Dumb"
 COPYRIGHT = f"© 2025 {AUTHOR}. All rights reserved."
 
