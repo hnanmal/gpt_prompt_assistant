@@ -31,6 +31,7 @@ class MainView(tk.Tk):
         self.project_controller = ProjectController(self, self.viewmodel)
 
         self._setup_ui()
+        self.update_current_model_label()
 
     def _setup_ui(self):
         self.sidebar_frame, self.right_frame = build_main_layout(self)

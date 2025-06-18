@@ -6,6 +6,7 @@ from tkinter import filedialog, messagebox, scrolledtext
 
 from controllers.output_handler import start_ollama_analysis
 from controllers.popup_handlers import show_custom_toast
+from viewmodels.prompt_viewmodel import viewmodel  # 전역 ViewModel
 
 
 def setup_prompt_controls(parent, app):
@@ -14,37 +15,56 @@ def setup_prompt_controls(parent, app):
     :param parent: 오른쪽 프레임 (right_frame)
     :param app: MainView 인스턴스
     """
+
     # 입력창
     app.input_entry = tk.Entry(parent, width=80)
     app.input_entry.pack(padx=10, pady=5, fill="x")
     app.input_entry.bind("<Return>", lambda event: on_user_submit(app))
 
+    upper_btn_area = tk.Frame(parent)
+    upper_btn_area.pack(side="top", fill="x")
+
+    # 내부 column을 3등분해서 가운데 정렬
+    upper_btn_area.columnconfigure(0, weight=1)
+    upper_btn_area.columnconfigure(1, weight=0)
+    upper_btn_area.columnconfigure(2, weight=1)
+
     # 제출 버튼
     app.submit_button = tk.Button(
-        parent, text="✉️ 요청 보내기", command=lambda: on_user_submit(app)
+        upper_btn_area, text="✉️ 요청 보내기", command=lambda: on_user_submit(app)
     )
-    app.submit_button.pack(pady=5)
+    app.submit_button.grid(row=0, column=0, padx=5, pady=5, sticky="e")
+
+    # 중지 버튼
+    app.stop_button = tk.Button(
+        upper_btn_area, text="⛔ 답변 중지", command=lambda: viewmodel.stop_streaming()
+    )
+    app.stop_button.grid(row=0, column=1, padx=5, pady=5, sticky="w")
+
+    # 중간에 빈 공간 채우기용 (column 2)
+    spacer = tk.Label(upper_btn_area, text="")
+    spacer.grid(row=0, column=2)
 
     # 출력창
     app.output_box = scrolledtext.ScrolledText(parent, wrap=tk.WORD, height=30)
     app.output_box.pack(padx=10, pady=(5, 0), fill="both", expand=True)
 
     # 버튼 프레임
-    button_frame = tk.Frame(parent)
-    button_frame.pack(padx=10, pady=(2, 10), anchor="e")
+    below_button_frame = tk.Frame(parent)
+    below_button_frame.pack(padx=10, pady=(2, 10), anchor="e")
 
     app.copy_button = tk.Button(
-        button_frame, text="📋 복사", command=lambda: copy_output(app)
+        below_button_frame, text="📋 복사", command=lambda: copy_output(app)
     )
     app.copy_button.pack(side="left", padx=5)
 
     app.save_button = tk.Button(
-        button_frame, text="💾 저장", command=lambda: save_output(app)
+        below_button_frame, text="💾 저장", command=lambda: save_output(app)
     )
     app.save_button.pack(side="left", padx=5)
 
     app.func_summary_button = tk.Button(
-        button_frame,
+        below_button_frame,
         text="🧠 함수 요약 보기",
         command=lambda: show_function_summary_popup(app),
     )
@@ -84,12 +104,12 @@ def on_user_submit(app):
         messagebox.showwarning("경고", "먼저 프로젝트를 열어주세요.")
         return
 
+    app.viewmodel.reset_stop_flag()
     app.status_label.config(text="⏳ GPT 응답 대기 중...")
     app.submit_button.config(state="disabled")
     app.output_box.delete("1.0", tk.END)
 
     threading.Thread(
-        # target=lambda: run_gpt_prompt_thread(app, user_input),
         target=lambda: run_ollama_stream_thread(app, user_input),
         daemon=True,
     ).start()
@@ -112,7 +132,11 @@ def run_gpt_prompt_thread(app, user_input):
     from utils.ollama_client import ask_ollama_stream
 
     ask_ollama_stream(
-        app.viewmodel.get_current_model(), prompt_text, on_token, on_complete
+        app.viewmodel.get_current_model(),
+        prompt_text,
+        on_token,
+        on_complete,
+        app.viewmodel.should_stop,
     )
 
 

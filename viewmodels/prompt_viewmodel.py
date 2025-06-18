@@ -25,7 +25,17 @@ class PromptViewModel:
         self.used_cache = False
         self.current_model = None
         self.last_ollama_result = None
+        self.stop_flag = False
         initialize_model_on_start(self)
+
+    def stop_streaming(self):
+        self.stop_flag = True
+
+    def reset_stop_flag(self):
+        self.stop_flag = False
+
+    def should_stop(self):
+        return self.stop_flag
 
     def set_current_model(self, model_name):
         self.current_model = model_name
@@ -112,6 +122,28 @@ class PromptViewModel:
     def get_last_ollama_result(self):
         return self.last_ollama_result or "(없음)"
 
+    # 🔽 PromptViewModel 내부에 추가
+    def build_stream_prompt(self, user_input: str) -> str:
+        if not user_input:
+            return "요청 내용을 입력하세요."
+
+        context_info = self.context.config_summary or (
+            "\n".join(
+                f"- {k}: {v}"
+                for k, v in infer_project_context(
+                    self.context.project_path or "."
+                ).items()
+            )
+        )
+
+        prompt_parts = [
+            f"### 🔧 프로젝트 컨텍스트\n{context_info or '(없음)'}",
+            f"### 📁 프로젝트 구조\n{self.context.tree_structure or '(없음)'}",
+            f"### 🗣️ 내 요청:\n{user_input}",
+        ]
+
+        return "\n\n".join(prompt_parts)
+
     def generate_prompt(self, user_input):
         if not user_input:
             return "요청 내용을 입력하세요."
@@ -141,30 +173,6 @@ class PromptViewModel:
 
     def is_cache_used(self):
         return self.used_cache
-
-    # 🔽 PromptViewModel 내부에 추가
-    def build_stream_prompt(self, user_input: str) -> str:
-        if not user_input:
-            return "요청 내용을 입력하세요."
-
-        context_info = self.context.config_summary or (
-            "\n".join(
-                f"- {k}: {v}"
-                for k, v in infer_project_context(
-                    self.context.project_path or "."
-                ).items()
-            )
-        )
-
-        prompt_parts = [
-            f"### 🔧 프로젝트 컨텍스트\n{context_info or '(없음)'}",
-            f"### 📁 프로젝트 구조\n{self.context.tree_structure or '(없음)'}",
-            # f"### 🤖 Ollama 분석 결과\n{self.get_last_ollama_result()}",
-            # f"### 📂 관련 파일 추천 (룰 기반)\n{related_files_text}",
-            f"### 🗣️ 내 요청:\n{user_input}",
-        ]
-
-        return "\n\n".join(prompt_parts)
 
 
 # ✅ 전역 인스턴스 추가

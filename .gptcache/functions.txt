@@ -64,6 +64,9 @@
 📄 viewmodels\prompt_viewmodel.py
   - def initialize_model_on_start() → 
   - def __init__() → 
+  - def stop_streaming() → 
+  - def reset_stop_flag() → 
+  - def should_stop() → 
   - def set_current_model() → 
   - def get_current_model() → 
   - def _ensure_cache_dir() → 

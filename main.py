@@ -7,7 +7,7 @@ import threading
 from tkinter import messagebox
 
 
-def check_and_prompt_ollama(model="mistral"):
+def check_and_prompt_ollama(model="phi3:mini"):
     if not is_ollama_running():
 
         def prompt():
@@ -24,7 +24,6 @@ def check_and_prompt_ollama(model="mistral"):
 if __name__ == "__main__":
     # initialize_model_on_start(viewmodel)
     app = MainView()
-
     # Ollama 비동기 상태 체크 (UI 띄운 후 실행)
     threading.Thread(target=check_and_prompt_ollama, daemon=True).start()
 

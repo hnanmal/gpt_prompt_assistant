@@ -11,7 +11,13 @@ def ask_ollama(prompt: str, model="mistral") -> str:
     return response["message"]["content"]
 
 
-def ask_ollama_stream(model, prompt, on_token_callback, on_complete_callback):
+def ask_ollama_stream(
+    model,
+    prompt,
+    on_token_callback,
+    on_complete_callback,
+    should_stop_callback,
+):
     url = "http://localhost:11434/api/generate"
     payload = {
         "model": model,
@@ -25,14 +31,14 @@ def ask_ollama_stream(model, prompt, on_token_callback, on_complete_callback):
         # 파일이름 목록 외에 자세한 설명은 전혀 할 필요 없어.
         # 이 밑에 나오는 정보는 참고용이야.
         # """
-        """
-        [Rules to Follow When Responding]  
+        f"""
+        [Rules to Follow When Responding]
         Only list the filenames that are *directly related* to my request from the project files.  
         Please, just list the filenames—nothing more. Do **not** exceed 200 characters in total.  
         Do **not** answer my request directly. Just select the files that *seem relevant* to perform the request.  
         Only choose filenames from the ones provided in the "Project Structure" list.  
         Do **not** include any explanations beyond the filename list.
-        The information below is just for reference.\n
+        The information below is condition of my project.\n
         """
         + prompt,
         "stream": True,
@@ -43,6 +49,9 @@ def ask_ollama_stream(model, prompt, on_token_callback, on_complete_callback):
         print("🔁 요청 시작:", prompt[:50])
         with requests.post(url, json=payload, stream=True, timeout=30) as response:
             for line in response.iter_lines():
+                if should_stop_callback and should_stop_callback():
+                    print("🛑 사용자 요청으로 중단되었습니다.")
+                    break
                 if line:
                     data = json.loads(line.decode("utf-8"))
                     token = data.get("response", "")

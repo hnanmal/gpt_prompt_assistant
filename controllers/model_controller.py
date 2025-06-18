@@ -37,6 +37,7 @@ class ModelController:
             apply_ollama_model(model.name)
             print(f"[모델 적용 성공]: {model.name}")
             viewmodel.set_current_model(model.name)  # ✅ 성공한 경우만 적용
+
             return True
         except Exception as e:
             print(f"[Ollama 오류] 모델 적용 실패: {e}")

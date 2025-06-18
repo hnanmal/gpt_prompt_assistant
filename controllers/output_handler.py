@@ -39,6 +39,7 @@ def start_ollama_analysis(
         prompt=full_prompt,  # ⬅️ 핵심 수정!
         on_token_callback=on_token,
         on_complete_callback=on_done,
+        should_stop_callback=viewmodel.should_stop,
     )
 
 

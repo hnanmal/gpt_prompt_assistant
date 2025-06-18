@@ -5,6 +5,7 @@ import tkinter as tk
 from ttkbootstrap import ttk
 from tkinter import messagebox
 
+from viewmodels.prompt_viewmodel import viewmodel  # 전역 ViewModel
 from utils.ollama_manager import (
     is_ollama_running,
     start_ollama_model_background,
@@ -39,10 +40,17 @@ def setup_ollama_controls(parent, app):
     )
     app.model_dropdown.pack(side="left", padx=5, pady=5)
 
-    # 기본 선택값 지정 (선택적)
-    if model_names:
-        app.model_var.set(model_names[0])
-        app.viewmodel.set_current_model(model_names[0])
+    # # 기본 선택값 지정 (선택적)
+    # if model_names:
+    #     app.model_var.set(model_names[0])
+    #     app.viewmodel.set_current_model(model_names[0])
+
+    # 값이 목록에 있을 경우 해당 인덱스 선택
+    current_model = viewmodel.get_current_model()
+    if current_model in app.model_dropdown["values"]:
+        app.model_dropdown.current(app.model_dropdown["values"].index(current_model))
+    else:
+        app.model_dropdown.current(0)  # fallback
 
     # 모델 적용 버튼
     app.apply_model_btn = ttk.Button(
