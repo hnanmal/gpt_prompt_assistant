@@ -1,4 +1,5 @@
 import os, ast, json
+from pyjsparser import PyJsParser
 
 
 def summarize_functions(file_path):
@@ -20,14 +21,14 @@ def summarize_functions(file_path):
 
 def get_project_tree(base_path):
     """
-    현재 폴더 기준으로 전체 구조를 탐색합니다.
-    - __pycache__, .venv, .git, .idea, .gptcache 제외
-    - .pyc 파일 제외
+    전체 프로젝트 폴더 구조를 반환합니다.
+    - 특정 폴더 및 확장자 제외
     """
     tree_lines = []
+    ALLOWED_EXTENSIONS = {".py", ".js", ".ts", ".jsx", ".tsx"}
 
     for root, dirs, files in os.walk(base_path):
-        # 📌 디렉토리 필터링
+        print(f"📁 {root} -> 파일 수: {len(files)}")  # ← 파일 수 확인
         dirs[:] = [
             d
             for d in dirs
@@ -37,26 +38,24 @@ def get_project_tree(base_path):
         indent = "    " * (root[len(base_path) :].count(os.sep))
         tree_lines.append(f"{indent}📁 {os.path.basename(root)}/")
 
-        for file in files:
-            # 📌 파일 필터링: .py 파일만 허용 (.pyc, 기타 확장자 제외)
-            if file.endswith(".py"):
+        for file in sorted(files):
+            ext = os.path.splitext(file)[1]
+            if ext in ALLOWED_EXTENSIONS:
                 tree_lines.append(f"{indent}    📄 {file}")
 
     return "\n".join(tree_lines)
 
 
 def extract_functions(root_dir):
-    """_summary_
-
-    Args:
-        root_dir (_type_): _description_
-
-    Returns:
-        _type_: _description_
+    """
+    프로젝트 디렉토리 내 .py 및 .js 파일에서 함수 요약 추출
     """
     result = ""
+    parser = PyJsParser()
+    allowed_extensions = {".py", ".js"}
+
     for dirpath, dirnames, filenames in os.walk(root_dir):
-        # ✅ 무시할 디렉토리 추가
+        # 📌 무시할 디렉토리
         dirnames[:] = [
             d
             for d in dirnames
@@ -64,16 +63,24 @@ def extract_functions(root_dir):
         ]
 
         for fname in filenames:
-            if fname.endswith(".py"):
-                path = os.path.join(dirpath, fname)
-                try:
-                    with open(path, "r", encoding="utf-8") as f:
-                        tree = ast.parse(f.read())
+            ext = os.path.splitext(fname)[1].lower()
+            if ext not in allowed_extensions:
+                continue
+
+            path = os.path.join(dirpath, fname)
+            rel_path = os.path.relpath(path, root_dir)
+
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    content = f.read()
+
+                # Python 파일 처리
+                if ext == ".py":
+                    tree = ast.parse(content)
                     funcs = [
                         n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef)
                     ]
                     if funcs:
-                        rel_path = os.path.relpath(path, root_dir)
                         result += f"\n📄 {rel_path}\n"
                         for func in funcs:
                             doc = ast.get_docstring(func)
@@ -81,9 +88,23 @@ def extract_functions(root_dir):
                             if doc:
                                 for line in doc.strip().splitlines():
                                     result += f"      {line.strip()}\n"
-                except Exception as e:
-                    result += f"\n[⚠️ Error parsing {fname}: {e}]\n"
-    return result
+
+                # JavaScript 파일 처리
+                elif ext == ".js":
+                    parsed = parser.parse(content)
+                    functions = []
+                    for stmt in parsed.get("body", []):
+                        if stmt["type"] == "FunctionDeclaration":
+                            functions.append(stmt["id"]["name"])
+                    if functions:
+                        result += f"\n📄 {rel_path}\n"
+                        for func_name in functions:
+                            result += f"  - function {func_name}()\n"
+
+            except Exception as e:
+                result += f"\n[⚠️ Error parsing {rel_path}: {e}]\n"
+
+    return result or "⚠️ 함수 요약 결과가 없습니다."
 
 
 # def extract_functions(root_dir):
