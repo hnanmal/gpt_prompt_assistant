@@ -16,6 +16,16 @@ function extractFunctionsFromFile(filePath) {
   const content = fs.readFileSync(filePath, 'utf8');
   // console.log(chalk.gray(`📄 [읽는 중] ${filePath}`));
 
+  const seen = new Set();
+
+  function addFunction(name, loc, summary) {
+    const key = `${name}:${loc?.start.line}`;
+    if (!seen.has(key)) {
+      functions.push({ name, loc, summary });
+      seen.add(key);
+    }
+  }
+
   let ast;
   try {
     ast = parse(content, {
@@ -34,7 +44,8 @@ function extractFunctionsFromFile(filePath) {
       const name = path.node.id?.name || '익명 함수';
       const loc = path.node.loc;
       const summary = extractDocSummary(path.node);
-      functions.push({ name, loc, summary });
+      // functions.push({ name, loc, summary });
+      addFunction( name, loc, summary );
     },
     VariableDeclarator(path) {
       const id = path.node.id;
@@ -46,7 +57,8 @@ function extractFunctionsFromFile(filePath) {
         const name = id.name;
         const loc = init.loc;
         const summary = extractDocSummary(init);
-        functions.push({ name, loc, summary });
+        // functions.push({ name, loc, summary });
+        addFunction( name, loc, summary );
       }
     },
     ExportNamedDeclaration(path) {
@@ -62,7 +74,8 @@ function extractFunctionsFromFile(filePath) {
             const name = id.name;
             const loc = init.loc;
             const summary = extractDocSummary(init);
-            functions.push({ name, loc, summary });
+            // functions.push({ name, loc, summary });
+            addFunction( name, loc, summary );
           }
         });
       }
@@ -70,7 +83,8 @@ function extractFunctionsFromFile(filePath) {
         const name = decl.id?.name || '익명 함수';
         const loc = decl.loc;
         const summary = extractDocSummary(decl);
-        functions.push({ name, loc, summary });
+        // functions.push({ name, loc, summary });
+        addFunction( name, loc, summary );
       }
     },
     ExportDefaultDeclaration(path) {
@@ -83,7 +97,8 @@ function extractFunctionsFromFile(filePath) {
         const name = decl.id?.name || 'defaultExport';
         const loc = decl.loc;
         const summary = extractDocSummary(decl);
-        functions.push({ name, loc, summary });
+        // functions.push({ name, loc, summary });
+        addFunction( name, loc, summary );
       }
     },
     ObjectProperty(path) {
@@ -95,14 +110,16 @@ function extractFunctionsFromFile(filePath) {
         const name = path.node.key.name || '(anonymous)';
         const loc = value.loc;
         const summary = extractDocSummary(value);
-        functions.push({ name, loc, summary });
+        // functions.push({ name, loc, summary });
+        addFunction( name, loc, summary );
       }
     },
     ObjectMethod(path) {
       const name = path.node.key.name || '(anonymous)';
       const loc = path.node.loc;
       const summary = extractDocSummary(path.node);
-      functions.push({ name, loc, summary });
+      // functions.push({ name, loc, summary });
+      addFunction( name, loc, summary );
     },
   });
 
@@ -152,7 +169,8 @@ function printResults(allFunctions) {
     for (const fn of functions) {
       const location = fn.loc ? ` (Line ${fn.loc.start.line})` : '';
       const summary = fn.summary ? ` // ${fn.summary}` : '';
-      console.log(`  - function ${chalk.green(fn.name)}${location}${summary}`);
+      // console.log(`  - function ${chalk.green(fn.name)}${location}${summary}`);
+      console.log(`${chalk.green(fn.name)}${location}${summary}`);
     }
     // console.log();
   }
