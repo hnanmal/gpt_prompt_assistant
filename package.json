@@ -1,0 +1,27 @@
+{
+  "name": "gpt_prompt_assistant",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "extract_js_functions.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hnanmal/gpt_prompt_assistant.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hnanmal/gpt_prompt_assistant/issues"
+  },
+  "homepage": "https://github.com/hnanmal/gpt_prompt_assistant#readme",
+  "description": "",
+  "dependencies": {
+    "@babel/parser": "^7.27.5",
+    "@babel/traverse": "^7.27.4",
+    "chalk": "^5.4.1",
+    "esprima": "^4.0.1"
+  }
+}

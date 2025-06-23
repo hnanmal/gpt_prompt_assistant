@@ -1,5 +1,6 @@
 import os, ast, json
 from pyjsparser import PyJsParser
+import subprocess
 
 
 def summarize_functions(file_path):
@@ -46,20 +47,35 @@ def get_project_tree(base_path):
     return "\n".join(tree_lines)
 
 
+def extract_js_functions_esprima(filepath):
+    try:
+        print(f"🧪 JS 분석 대상 파일: {filepath}")
+        output = subprocess.check_output(
+            ["node", "extract_js_functions.js", filepath],
+            stderr=subprocess.STDOUT,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+        )
+        print("✅ Node 결과:\n", output)
+        return output.strip().splitlines()
+    except subprocess.CalledProcessError as e:
+        print("❌ Node 실행 오류:\n", e.output)
+        return [f"[⚠️ JS 파싱 오류: {e.output.strip()}]"]
+    except FileNotFoundError:
+        print("❌ Node.js 실행파일(node)을 찾을 수 없습니다.")
+        return ["[⚠️ Node.js not found]"]
+
+
 def extract_functions(root_dir):
-    """
-    프로젝트 디렉토리 내 .py 및 .js 파일에서 함수 요약 추출
-    """
     result = ""
-    parser = PyJsParser()
-    allowed_extensions = {".py", ".js"}
+    allowed_extensions = {".py", ".js", ".jsx", ".ts", ".tsx"}
 
     for dirpath, dirnames, filenames in os.walk(root_dir):
-        # 📌 무시할 디렉토리
         dirnames[:] = [
             d
             for d in dirnames
-            if d not in {"__pycache__", ".venv", "venv", ".git", ".idea", ".gptcache"}
+            if d not in {".git", ".idea", "__pycache__", ".venv", "venv"}
         ]
 
         for fname in filenames:
@@ -71,12 +87,9 @@ def extract_functions(root_dir):
             rel_path = os.path.relpath(path, root_dir)
 
             try:
-                with open(path, "r", encoding="utf-8") as f:
-                    content = f.read()
-
-                # Python 파일 처리
                 if ext == ".py":
-                    tree = ast.parse(content)
+                    with open(path, "r", encoding="utf-8") as f:
+                        tree = ast.parse(f.read())
                     funcs = [
                         n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef)
                     ]
@@ -89,53 +102,18 @@ def extract_functions(root_dir):
                                 for line in doc.strip().splitlines():
                                     result += f"      {line.strip()}\n"
 
-                # JavaScript 파일 처리
-                elif ext == ".js":
-                    parsed = parser.parse(content)
-                    functions = []
-                    for stmt in parsed.get("body", []):
-                        if stmt["type"] == "FunctionDeclaration":
-                            functions.append(stmt["id"]["name"])
-                    if functions:
+                # elif ext == ".js":
+                elif ext in allowed_extensions:
+                    funcs = extract_js_functions_esprima(path)
+                    if funcs:
                         result += f"\n📄 {rel_path}\n"
-                        for func_name in functions:
-                            result += f"  - function {func_name}()\n"
+                        for name in funcs:
+                            result += f"  - function {name}()\n"
 
             except Exception as e:
                 result += f"\n[⚠️ Error parsing {rel_path}: {e}]\n"
 
     return result or "⚠️ 함수 요약 결과가 없습니다."
-
-
-# def extract_functions(root_dir):
-#     result = ""
-#     for dirpath, dirnames, filenames in os.walk(root_dir):
-#         # ✅ 무시할 디렉토리 추가
-#         dirnames[:] = [
-#             d
-#             for d in dirnames
-#             if d not in {"__pycache__", ".venv", "venv", ".git", ".idea", ".gptcache"}
-#         ]
-
-#         for fname in filenames:
-#             if fname.endswith(".py"):
-#                 path = os.path.join(dirpath, fname)
-#                 try:
-#                     with open(path, "r", encoding="utf-8") as f:
-#                         tree = ast.parse(f.read())
-#                     funcs = [
-#                         n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef)
-#                     ]
-#                     if funcs:
-#                         rel_path = os.path.relpath(path, root_dir)
-#                         result += f"📄 {rel_path}\n"
-#                         for func in funcs:
-#                             doc = ast.get_docstring(func)
-#                             summary = doc.split("\n")[0] if doc else ""
-#                             result += f"  - def {func.name}() → {summary}\n"
-#                 except:
-#                     pass
-#     return result
 
 
 def load_config(project_root):

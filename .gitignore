@@ -39,3 +39,28 @@ Thumbs.db
 /installer/
 /Output/
 
+# Node modules
+node_modules/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+
+# Optional npm cache directory
+.npm/
+
+# Vite or Next build outputs
+dist/
+build/
+
+# System
+.DS_Store
+.env
+
+
