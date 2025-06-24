@@ -1,6 +1,7 @@
 import os, ast, json
-from pyjsparser import PyJsParser
+import sys
 import subprocess
+import platform
 
 
 def summarize_functions(file_path):
@@ -27,14 +28,24 @@ def get_project_tree(base_path):
     """
     tree_lines = []
     ALLOWED_EXTENSIONS = {".py", ".js", ".ts", ".jsx", ".tsx"}
+    EXCLUDED_DIRS = {
+        "node_modules",
+        ".git",
+        "dist",
+        "build",
+        ".venv",
+        "venv",
+        "__pycache__",
+        ".gptcache",
+        ".idea",
+        ".next",
+        ".out",
+        ".cache",
+    }
 
     for root, dirs, files in os.walk(base_path):
-        print(f"📁 {root} -> 파일 수: {len(files)}")  # ← 파일 수 확인
-        dirs[:] = [
-            d
-            for d in dirs
-            if d not in {"__pycache__", ".venv", "venv", ".git", ".idea", ".gptcache"}
-        ]
+        # ✅ 디렉토리 제외
+        dirs[:] = [d for d in dirs if d not in EXCLUDED_DIRS]
 
         indent = "    " * (root[len(base_path) :].count(os.sep))
         tree_lines.append(f"{indent}📁 {os.path.basename(root)}/")
@@ -49,13 +60,25 @@ def get_project_tree(base_path):
 
 def extract_js_functions_esprima(filepath):
     try:
+        # 👉 PyInstaller 빌드 경로 고려
+        base_dir = getattr(sys, "_MEIPASS", os.path.abspath("."))  # 배포 환경 대응
+        node_path = os.path.join(base_dir, "node.exe")  # ✅ 내장된 node 실행파일
+        js_script = os.path.join(base_dir, "extract_js_functions.js")
+
+        # ✅ 콘솔창 없이 실행 옵션 추가 (Windows 한정)
+        startup_flags = 0
+        if platform.system() == "Windows":
+            startup_flags = subprocess.CREATE_NO_WINDOW
+
         print(f"🧪 JS 분석 대상 파일: {filepath}")
         output = subprocess.check_output(
-            ["node", "extract_js_functions.js", filepath],
+            # ["node", "extract_js_functions.js", filepath],
+            [node_path, js_script, filepath],
             stderr=subprocess.STDOUT,
             text=True,
             encoding="utf-8",
             errors="replace",
+            creationflags=startup_flags,  # 🔥 핵심: 콘솔창 숨김
         )
         print("✅ Node 결과:\n", output)
         return output.strip().splitlines()
@@ -70,13 +93,21 @@ def extract_js_functions_esprima(filepath):
 def extract_functions(root_dir):
     result = ""
     allowed_extensions = {".py", ".js", ".jsx", ".ts", ".tsx"}
+    ignored_dirs = {
+        ".git",
+        ".idea",
+        "__pycache__",
+        ".venv",
+        "venv",
+        "node_modules",
+        "dist",
+        "build",
+        ".next",
+    }
 
     for dirpath, dirnames, filenames in os.walk(root_dir):
-        dirnames[:] = [
-            d
-            for d in dirnames
-            if d not in {".git", ".idea", "__pycache__", ".venv", "venv"}
-        ]
+        # ✅ 여기에 node_modules 포함
+        dirnames[:] = [d for d in dirnames if d not in ignored_dirs]
 
         for fname in filenames:
             ext = os.path.splitext(fname)[1].lower()
@@ -102,7 +133,6 @@ def extract_functions(root_dir):
                                 for line in doc.strip().splitlines():
                                     result += f"      {line.strip()}\n"
 
-                # elif ext == ".js":
                 elif ext in allowed_extensions:
                     funcs = extract_js_functions_esprima(path)
                     if funcs:

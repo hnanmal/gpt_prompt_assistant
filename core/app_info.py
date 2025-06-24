@@ -1,7 +1,7 @@
 # 📁 core/app_info.py
 
 APP_NAME = "GPT Prompt Assistant"
-VERSION = "1.0.1"
+VERSION = "1.0.2"
 AUTHOR = "Done by Dumb"
 COPYRIGHT = f"© 2025 {AUTHOR}. All rights reserved."
 
@@ -9,7 +9,11 @@ ABOUT_TEXT = f"""{APP_NAME}
 
 개발자: {AUTHOR}
 버전: {VERSION}
-
+로그:
+  ❕ v1.0.2 [2025.06.24] - js 파싱 기능 추가로 리액트 프로젝트 열기 가능
+  
+---
+소개:
 이 프로그램은 Ollama 모델을 활용한 GPT 기반 프롬프트 분석 도구입니다.
 
 다양한 폴더와 파일로 이루어진 개발 프로젝트를 진행할 때, GPT에게 질문을 하면

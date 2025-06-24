@@ -1,9 +1,6 @@
 # controllers/output_handler.py
 
 from utils.ollama_client import ask_ollama_stream
-from utils.keyword_utils import extract_keywords
-from utils.file_matcher import find_related_files
-from utils.context_builder import infer_project_context
 
 
 def start_ollama_analysis(

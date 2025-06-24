@@ -1,8 +1,6 @@
 📁 gpt_prompt_assistant/
+    📄 extract_js_functions.js
     📄 main.py
-    📁 build/
-        📁 gpt-prompt-assistant/
-            📁 localpycs/
     📁 controllers/
         📄 menu_handlers.py
         📄 model_controller.py
@@ -12,55 +10,6 @@
         📄 project_loader.py
     📁 core/
         📄 app_info.py
-    📁 dist/
-        📁 gpt-prompt-assistant/
-            📁 _internal/
-                📁 certifi/
-                📁 charset_normalizer/
-                📁 core/
-                    📄 app_info.py
-                📁 ollama-0.5.1.dist-info/
-                    📁 licenses/
-                📁 PIL/
-                📁 psutil/
-                📁 pydantic_core/
-                📁 resources/
-                📁 tcl8/
-                    📁 8.4/
-                        📁 platform/
-                    📁 8.5/
-                    📁 8.6/
-                📁 _tcl_data/
-                    📁 encoding/
-                    📁 http1.0/
-                    📁 msgs/
-                    📁 opt0.4/
-                    📁 tzdata/
-                        📁 Africa/
-                        📁 America/
-                            📁 Argentina/
-                            📁 Indiana/
-                            📁 Kentucky/
-                            📁 North_Dakota/
-                        📁 Antarctica/
-                        📁 Arctic/
-                        📁 Asia/
-                        📁 Atlantic/
-                        📁 Australia/
-                        📁 Brazil/
-                        📁 Canada/
-                        📁 Chile/
-                        📁 Etc/
-                        📁 Europe/
-                        📁 Indian/
-                        📁 Mexico/
-                        📁 Pacific/
-                        📁 SystemV/
-                        📁 US/
-                📁 _tk_data/
-                    📁 images/
-                    📁 msgs/
-                    📁 ttk/
     📁 installer/
         📁 installer/
     📁 models/

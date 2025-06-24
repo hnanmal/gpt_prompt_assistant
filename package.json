@@ -23,5 +23,14 @@
     "@babel/traverse": "^7.27.4",
     "chalk": "^5.4.1",
     "esprima": "^4.0.1"
+  },
+  "bin": "extract_js_functions.js",
+  "pkg": {
+    "scripts": [
+      "extract_js_functions.js"
+    ],
+    "targets": [
+      "node18-win-x64"
+    ]
   }
 }

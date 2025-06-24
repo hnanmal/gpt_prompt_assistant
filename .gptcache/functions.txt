@@ -1,4 +1,18 @@
 
+📄 extract_js_functions.js
+  - function extractFunctionsFromFile (Line 15) // 📌 함수 추출 로직()
+  - function addFunction (Line 21)()
+  - function FunctionDeclaration (Line 43)()
+  - function VariableDeclarator (Line 50)()
+  - function ExportNamedDeclaration (Line 64)()
+  - function ExportDefaultDeclaration (Line 90)()
+  - function ObjectProperty (Line 104)()
+  - function ObjectMethod (Line 117)()
+  - function extractDocSummary (Line 131) // 📌 JSDoc 요약 추출()
+  - function walkDir (Line 140) // 📌 디렉토리 순회()
+  - function printResults (Line 166) // 📌 결과 출력()
+  - function main (Line 189) // 📌 메인 실행()
+
 📄 main.py
   - def check_and_prompt_ollama()
   - def prompt()
@@ -96,17 +110,10 @@
 📄 utils\parser_utils.py
   - def summarize_functions()
   - def get_project_tree()
-      현재 폴더 기준으로 전체 구조를 탐색합니다.
-      - __pycache__, .venv, .git, .idea, .gptcache 제외
-      - .pyc 파일 제외
+      전체 프로젝트 폴더 구조를 반환합니다.
+      - 특정 폴더 및 확장자 제외
+  - def extract_js_functions_esprima()
   - def extract_functions()
-      _summary_
-      
-      Args:
-      root_dir (_type_): _description_
-      
-      Returns:
-      _type_: _description_
   - def load_config()
 
 📄 viewmodels\prompt_viewmodel.py

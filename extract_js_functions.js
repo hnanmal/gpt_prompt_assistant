@@ -139,6 +139,15 @@ function extractDocSummary(node) {
 // 📌 디렉토리 순회
 function walkDir(currentPath, callback) {
   const stat = fs.statSync(currentPath);
+
+  // ✅ 경로 문자열에 포함된 무시 디렉토리 목록
+  const ignoredDirs = ['node_modules', '.git', 'dist', 'build', '.next', '.out', '.cache'];
+
+  // ✅ 경로 문자열 중 하나라도 포함되어 있으면 무시
+  if (ignoredDirs.some(dir => currentPath.includes(`${path.sep}${dir}${path.sep}`))) {
+    return;
+  }
+
   if (stat.isDirectory()) {
     const files = fs.readdirSync(currentPath);
     for (const file of files) {
